@@ -1,8 +1,13 @@
-import Image from "next/image";
+import Banner from "@/components/Home_Page/Banner";
+import HowBorrowingWorks from "@/components/Home_Page/HowBorrowingWorks";
 
-export default function Home() {
-  return <>
-    <div>This is the Home page </div>
+const Home = () => {
+  return (
+    <main className="flex-1">
+      <Banner />
+      <HowBorrowingWorks />
+    </main>
+  );
+};
 
-  </>
-}
+export default Home;
