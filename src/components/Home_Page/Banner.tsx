@@ -32,7 +32,7 @@ const slides = [
   },
 ];
 
-export default function Banner() {
+const Banner = () => {
   const [swiper, setSwiper] = useState<SwiperInstance | null>(null);
 
   return (
@@ -71,7 +71,7 @@ export default function Banner() {
                       {slide.description}
                     </p>
                     <Link
-                      href="/books"
+                      href="/all-books"
                       className={buttonVariants({ className: "mt-7 h-11 bg-[#a9e9cd] px-6 text-[#102625] hover:bg-[#c4f4dc]" })}
                     >
                       Browse Books
@@ -107,4 +107,6 @@ export default function Banner() {
       </div>
     </section>
   );
-}
+};
+
+export default Banner;

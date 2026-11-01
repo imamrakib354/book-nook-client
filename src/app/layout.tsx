@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   description: "Discover, borrow, and share books.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+const RootLayout = ({ children }: LayoutProps<"/">) => {
   return (
     <html lang="en" className={`${dmSerif.variable} h-full antialiased`}>
       <body className={`${inter.className} flex min-h-screen flex-col bg-[#0b191a] text-white`}>
@@ -29,4 +29,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </body>
     </html>
   );
-}
+};
+
+export default RootLayout;

@@ -6,7 +6,7 @@ const footerLinkClass = "transition-colors hover:text-[#a9e9cd] focus-visible:ro
 
 const socialLinkClass = "flex size-9 items-center justify-center rounded-full bg-[#223638] text-[#a9e9cd] transition-colors hover:bg-[#304c48] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd]";
 
-export default function Footer() {
+const Footer = () => {
   return (
     <footer className="bg-[#0e1d1e] px-5 pt-12 pb-5 text-[#99aaab] sm:px-8 lg:px-10">
       <div className="mx-auto max-w-7xl">
@@ -72,4 +72,6 @@ export default function Footer() {
       </div>
     </footer>
   );
-}
+};
+
+export default Footer;
