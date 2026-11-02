@@ -26,13 +26,23 @@ const SignUpPage = () => {
     const formData = new FormData(event.currentTarget);
     const name = String(formData.get("name") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
+    const image = String(formData.get("image") ?? "").trim();
     const password = String(formData.get("password") ?? "");
+
+    if (image) {
+      try {
+        if (!["http:", "https:"].includes(new URL(image).protocol)) throw new Error("Invalid image URL");
+      } catch {
+        setFormError("Enter a valid http or https profile picture URL.");
+        return;
+      }
+    }
 
     setFormError("");
     setIsSubmitting(true);
 
     try {
-      const { data, error } = await authClient.signUp.email({ name, email, password });
+      const { data, error } = await authClient.signUp.email({ name, email, password, image: image || undefined });
 
       if (error) {
         setFormError(error.message || "Could not create your account. Please try again.");
@@ -87,6 +97,10 @@ const SignUpPage = () => {
               <Input id="sign-up-email" name="email" type="email" autoComplete="email" required placeholder="you@example.com" className={inputClass} />
             </div>
             <div>
+              <Label htmlFor="sign-up-image" className={labelClass}>Profile Pic URL <span className="text-[#91a4a4]">(optional)</span></Label>
+              <Input id="sign-up-image" name="image" type="url" placeholder="https://..." className={inputClass} />
+            </div>
+            <div>
               <Label htmlFor="sign-up-password" className={labelClass}>Password</Label>
               <div className="relative">
                 <Input
@@ -120,7 +134,7 @@ const SignUpPage = () => {
           </form>
 
           <p className="mt-5 text-center text-sm text-[#a7b8b8]">
-            Already a member? <Link href="/login" className="text-[#a9e9cd] hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-[#a9e9cd]">Sign in</Link>
+            Already a member? <Link href="/sign-in" className="text-[#a9e9cd] hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-[#a9e9cd]">Sign in</Link>
           </p>
 
           <div className="my-7 flex items-center gap-4 text-xs text-[#9badae]">

@@ -1,15 +1,24 @@
 import Image from "next/image";
 import Link from "next/link";
+import { headers } from "next/headers";
 
-const navigation = [
+import { auth } from "@/lib/auth";
+import ProfileDropdown from "@/components/profile-dropdown";
+
+const publicNavigation = [
   { label: "Home", href: "/" },
   { label: "All Books", href: "/all-books" },
+];
+
+const privateNavigation = [
   { label: "Add Book", href: "/add-book" },
   { label: "My Books", href: "/my-books" },
   { label: "My Borrows", href: "/my-borrows" },
 ];
 
-const Navbar = () => {
+const Navbar = async () => {
+  const session = await auth.api.getSession({ headers: await headers() });
+  const navigation = session ? [...publicNavigation, ...privateNavigation] : publicNavigation;
   return (
     <header className="sticky top-0 z-50 border-b border-white/5 bg-[#0e1d1e] text-white">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-5 px-5 py-3 sm:px-8 lg:flex-nowrap lg:gap-8 lg:px-10">
@@ -36,14 +45,16 @@ const Navbar = () => {
           </ul>
         </nav>
 
-        <div className="flex shrink-0 items-center gap-2 text-xs sm:text-sm">
-          <Link href="/login" className="inline-flex h-9 items-center justify-center rounded-md bg-[#223638] px-3 text-[#d2dddb] transition-colors hover:bg-[#30484a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd] sm:px-4">
+        {session ? <ProfileDropdown name={session.user.name} email={session.user.email} image={session.user.image} /> : <div className="flex shrink-0 items-center gap-2 text-xs sm:text-sm">
+          
+          <Link href="/sign-in" className="inline-flex h-9 items-center justify-center rounded-md bg-[#223638] px-3 text-[#d2dddb] transition-colors hover:bg-[#30484a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd] sm:px-4">
             Log in
           </Link>
+
           <Link href="/sign-up" className="inline-flex h-9 items-center justify-center rounded-md bg-[#a9e9cd] px-3 font-medium text-[#102625] transition-colors hover:bg-[#c4f4dc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd] sm:px-4">
             Sign up
           </Link>
-        </div>
+        </div>}
       </div>
     </header>
   );

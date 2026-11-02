@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Inter, DM_Serif_Display } from "next/font/google";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
@@ -23,7 +24,9 @@ const RootLayout = ({ children }: LayoutProps<"/">) => {
   return (
     <html lang="en" className={`${dmSerif.variable} h-full antialiased`}>
       <body className={`${inter.className} flex min-h-screen flex-col bg-[#0b191a] text-white`}>
-        <Navbar />
+        <Suspense fallback={<div className="h-[76px] border-b border-white/5 bg-[#0e1d1e]" />}>
+          <Navbar />
+        </Suspense>
         <div className="flex flex-1 flex-col">{children}</div>
         <Footer />
       </body>

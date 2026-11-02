@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import BookDetailsPage from "@/components/bookDetailsPage";
 import type { IBook } from "@/lib/types/IBook";
+import { requireSession } from "@/lib/require-session";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 type BookPageProps = { params: Promise<{ id: string }> };
@@ -26,6 +27,7 @@ const BookDetailsSkeleton = () => (
 );
 
 const BookContent = async ({ params }: BookPageProps) => {
+  await requireSession();
   const { id } = await params;
   const response = await fetch(`${apiUrl}/all-books/${encodeURIComponent(id)}`, { cache: "no-store" });
 
