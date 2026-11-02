@@ -40,7 +40,7 @@ const Navbar = () => {
           <Link href="/login" className="inline-flex h-9 items-center justify-center rounded-md bg-[#223638] px-3 text-[#d2dddb] transition-colors hover:bg-[#30484a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd] sm:px-4">
             Log in
           </Link>
-          <Link href="/register" className="inline-flex h-9 items-center justify-center rounded-md bg-[#a9e9cd] px-3 font-medium text-[#102625] transition-colors hover:bg-[#c4f4dc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd] sm:px-4">
+          <Link href="/sign-up" className="inline-flex h-9 items-center justify-center rounded-md bg-[#a9e9cd] px-3 font-medium text-[#102625] transition-colors hover:bg-[#c4f4dc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd] sm:px-4">
             Sign up
           </Link>
         </div>
