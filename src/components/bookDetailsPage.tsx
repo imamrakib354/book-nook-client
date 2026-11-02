@@ -14,9 +14,11 @@ const BookDetailsPage = async ({ book }: { book: IBook }) => {
       `${apiUrl}/all-books/category/${encodeURIComponent(book.category)}`,
       { cache: "no-store" },
     );
+    
     if (!response.ok) throw new Error("Unable to load similar books.");
 
-    const categoryBooks = (await response.json()) as IBook[];
+    const categoryBooks: IBook[] = await response.json();
+
     suggestions = categoryBooks
       .filter((suggestion) => suggestion._id !== book._id && suggestion.category === book.category)
       .slice(0, 3);

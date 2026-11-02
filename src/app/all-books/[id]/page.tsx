@@ -32,7 +32,7 @@ const BookContent = async ({ params }: BookPageProps) => {
   if (response.status === 404) notFound();
   if (!response.ok) throw new Error("Unable to load book details.");
 
-  const book = (await response.json()) as IBook | null;
+  const book: IBook = await response.json();
   if (!book) notFound();
 
   return <BookDetailsPage book={book} />;
