@@ -20,11 +20,9 @@ const AddBookPage = () => {
   const [previewUrl, setPreviewUrl] = useState("");
   const [coverLoaded, setCoverLoaded] = useState(false);
   const [coverError, setCoverError] = useState("");
-  const [formMessage, setFormMessage] = useState("");
 
   const previewCover = () => {
     setCoverError("");
-    setFormMessage("");
 
     try {
       const url = new URL(imageUrl.trim());
@@ -41,14 +39,36 @@ const AddBookPage = () => {
     }
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!coverLoaded) {
-      setCoverError("Preview a working cover image before publishing.");
-      return;
-    }
-    setFormMessage("The form is ready. Publishing will be available when the book service is connected.");
-  };
+ 
+const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+
+  const formData = new FormData(e.currentTarget);
+  const destination = Object.fromEntries(formData.entries());
+  console.log("Form data to be sent :", destination);
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+  const response = await fetch(`${apiUrl}/add-book`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(destination),
+  });
+
+  const result = await response.json();
+  console.log("Response from server:", result);
+
+  if (response.ok) {
+    (e.target as HTMLFormElement).reset();
+
+    setImageUrl("");
+    setPreviewUrl("");
+    setCoverLoaded(false);
+    setCoverError("");
+  }
+};
 
   return (
     <main className="flex-1 bg-[#0b191a] px-5 py-12 text-white sm:px-8 sm:py-16 lg:px-10">
@@ -103,12 +123,11 @@ const AddBookPage = () => {
                   type="url"
                   required
                   value={imageUrl}
-                  onChange={(event) => {
-                    setImageUrl(event.target.value);
+                  onChange={(e) => {
+                    setImageUrl(e.target.value);
                     setPreviewUrl("");
                     setCoverLoaded(false);
                     setCoverError("");
-                    setFormMessage("");
                   }}
                   placeholder="https://example.com/book-cover.jpg"
                   aria-invalid={Boolean(coverError)}
@@ -174,10 +193,9 @@ const AddBookPage = () => {
               <Button type="submit" className="h-11 w-full bg-[#a9e9cd] text-[#102625] hover:bg-[#c4f4dc]">
                 Publish book <span aria-hidden="true">→</span>
               </Button>
-              <p className="mt-2 text-xs text-[#a7b8b8]">Publishing will be enabled when the book service is connected.</p>
-              {formMessage && <p role="status" className="mt-2 text-sm text-[#a9e9cd]">{formMessage}</p>}
+
             </div>
-            
+
           </form>
         </Card>
       </div>
