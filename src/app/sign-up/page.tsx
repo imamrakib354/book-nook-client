@@ -105,18 +105,22 @@ const SignUpPage = () => {
           </h1>
 
           <form ref={formRef} onSubmit={handleEmailSignUp} autoComplete="off" className="mt-9 space-y-5">
+
             <div>
               <Label htmlFor="sign-up-name" className={labelClass}>Full name</Label>
               <Input id="sign-up-name" name="name" type="text" autoComplete="off" required placeholder="Your name" className={inputClass} />
             </div>
+
             <div>
               <Label htmlFor="sign-up-email" className={labelClass}>Email</Label>
               <Input id="sign-up-email" name="email" type="email" autoComplete="off" required placeholder="you@example.com" className={inputClass} />
             </div>
+
             <div>
               <Label htmlFor="sign-up-image" className={labelClass}>Profile Pic URL <span className="text-[#91a4a4]">(optional)</span></Label>
               <Input id="sign-up-image" name="image" type="url" placeholder="https://..." className={inputClass} />
             </div>
+
             <div>
               <Label htmlFor="sign-up-password" className={labelClass}>Password</Label>
               <div className="relative">
@@ -140,6 +144,7 @@ const SignUpPage = () => {
                   {showPassword ? <EyeOff aria-hidden="true" className="size-5" /> : <Eye aria-hidden="true" className="size-5" />}
                 </button>
               </div>
+
               <p className="mt-2 text-xs text-[#9badae]">Use at least 8 characters.</p>
             </div>
 
@@ -166,6 +171,7 @@ const SignUpPage = () => {
               <span aria-hidden="true" className="text-xs font-bold tracking-tight">GH</span> Continue with GitHub
             </button>
           </div>
+          
         </section>
       </div>
     </main>

@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 
-import { ProfileAvatar } from "@/components/profile-menu";
+import { ProfileAvatar } from "@/components/profilePage/profile-menu";
+import ProfileDialogBox from "@/components/profilePage/profileDialogBox";
 import { requireSession } from "@/lib/require-session";
 import type { IBook } from "@/lib/types/IBook";
 import type { IBorrow } from "@/lib/types/IBorrow";
@@ -49,6 +50,7 @@ async function AuthenticatedProfile() {
         <h1 className="font-[family-name:var(--font-dm-serif)] text-3xl text-[#fffaf1] sm:text-4xl">Your reader profile</h1>
         <p className="mt-1 text-sm text-[#a7b8b8]">A space for your books, your borrowing history and account details.</p>
         <section aria-label="Reader profile" className="mt-8 rounded-xl bg-[#172b2c] p-6 sm:p-8">
+          
           <div className="flex items-center gap-5 sm:gap-6">
             <ProfileAvatar name={user.name} image={user.image} size={80} />
             <div className="min-w-0">
@@ -68,9 +70,7 @@ async function AuthenticatedProfile() {
           </div>
 
           {(loadError || borrowLoadError) && <p role="alert" className="mt-3 text-sm text-[#f3b7a8]">Unable to load some book statistics. Please try again later.</p>}
-          <button type="button" title="Profile editing coming soon" className="mt-9 inline-flex h-9 min-w-28 items-center justify-center rounded-md bg-[#a9e9cd] px-4 text-xs font-medium text-[#102625] hover:bg-[#c4f4dc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd]">
-            Edit profile
-          </button>
+          <ProfileDialogBox user={{ name: user.name, image: user.image }} />
         </section>
       </div>
     </main>

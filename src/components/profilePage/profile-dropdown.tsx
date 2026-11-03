@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { authClient } from "@/lib/auth-client";
-import { ProfileAvatar } from "@/components/profile-menu";
+import { ProfileAvatar } from "@/components/profilePage/profile-menu";
 
 export default function ProfileDropdown({
   name,

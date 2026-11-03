@@ -3,7 +3,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 
 import { auth } from "@/lib/auth";
-import ProfileDropdown from "@/components/profile-dropdown";
+import ProfileDropdown from "@/components/profilePage/profile-dropdown";
 
 const publicNavigation = [
   { label: "Home", href: "/" },

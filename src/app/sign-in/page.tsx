@@ -56,8 +56,10 @@ const SignInPage = () => {
 
   return (
     <main className="flex-1 bg-[#0b191a] px-5 py-10 text-white sm:px-8 sm:py-14 lg:px-10">
+
       <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-2 md:gap-14 lg:gap-20">
         <section className="flex min-h-[520px] flex-col overflow-hidden rounded-2xl bg-[#214c46] p-7 sm:p-9 md:min-h-[680px] md:pt-16">
+
           <h2 className="font-[family-name:var(--font-dm-serif)] text-4xl leading-tight text-[#fffaf1] sm:text-5xl">
             Welcome back<br />to the nook.
           </h2>
@@ -72,6 +74,7 @@ const SignInPage = () => {
               preload
             />
           </div>
+          
         </section>
 
         <section className="flex flex-col justify-center py-3 md:py-10">
