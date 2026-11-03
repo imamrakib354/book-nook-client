@@ -51,6 +51,8 @@ const EditBook = ({ book }: { book: IBook }) => {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
+    formData.delete("title");
+    formData.delete("author");
     const updatedData = Object.fromEntries(formData.entries());
 
     const apiUrl =
@@ -106,7 +108,7 @@ const EditBook = ({ book }: { book: IBook }) => {
 
         {open && (
           <form onSubmit={handleSubmit} className="mt-2 space-y-6">
-
+            <p id={`identity-note-${book._id}`} className="text-sm text-[#a7b8b8]">Title and author cannot be updated.</p>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <Label
@@ -119,8 +121,9 @@ const EditBook = ({ book }: { book: IBook }) => {
                   id={`title-${book._id}`}
                   name="title"
                   defaultValue={book.title}
-                  required
-                  className={inputClass}
+                  readOnly
+                  aria-describedby={`identity-note-${book._id}`}
+                  className={`${inputClass} cursor-not-allowed opacity-60`}
                 />
               </div>
 
@@ -135,8 +138,9 @@ const EditBook = ({ book }: { book: IBook }) => {
                   id={`author-${book._id}`}
                   name="author"
                   defaultValue={book.author}
-                  required
-                  className={inputClass}
+                  readOnly
+                  aria-describedby={`identity-note-${book._id}`}
+                  className={`${inputClass} cursor-not-allowed opacity-60`}
                 />
               </div>
             </div>

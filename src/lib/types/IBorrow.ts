@@ -4,6 +4,7 @@ export interface IBorrow {
   name: string;
   email: string;
   title: string;
+  author?: string;
   coverUrl: string;
   borrowDate: string;
   dueDate: string;

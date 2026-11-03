@@ -1,13 +1,43 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
+import { Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import BorrowedBookCard from "./borrowedBookCard";
 import type { IBorrow } from "@/lib/types/IBorrow";
 
 const MyBorrows = ({ borrows, now }: { borrows: IBorrow[]; now: number }) => {
+
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("latest");
+
   const daysLeft = (borrow: IBorrow) => Math.ceil((new Date(borrow.dueDate).getTime() - now) / 86400000);
+
   const active = borrows.filter((borrow) => daysLeft(borrow) > 0)
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
   const dueSoon = active.filter((borrow) => daysLeft(borrow) <= 3).length;
+
   const closest = active[0];
+
+  const searchTerm = search.trim().toLowerCase();
+  
+  const filteredBorrows = active.filter((borrow) =>
+    `${borrow.title} ${borrow.author ?? ""}`.toLowerCase().includes(searchTerm)
+  );
+  const sortedBorrows = [...filteredBorrows].sort((a, b) => {
+    if (sortBy === "latest") {
+      return new Date(b.borrowDate).getTime() - new Date(a.borrowDate).getTime();
+    }
+
+    if (sortBy === "oldest") {
+      return new Date(a.borrowDate).getTime() - new Date(b.borrowDate).getTime();
+    }
+
+    return 0;
+  });
 
   return (
     <>
@@ -29,13 +59,32 @@ const MyBorrows = ({ borrows, now }: { borrows: IBorrow[]; now: number }) => {
         </div>
       </section>
 
-      {active.length > 0 ? (
+      <div className="mt-9 grid items-end gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(10rem,0.4fr)_auto]">
+        <div>
+          <Label htmlFor="my-borrow-search" className="mb-2 text-xs font-normal text-[#b7c6c5]">Search my borrows</Label>
+          <Input id="my-borrow-search" type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search by title or author..." className="h-11 border-0 bg-[#223638] px-3 text-white placeholder:text-[#91a4a4] focus-visible:border-[#a9e9cd] focus-visible:ring-[#a9e9cd]/30" />
+        </div>
+        <div>
+          <Label htmlFor="my-borrow-sort" className="mb-2 text-xs font-normal text-[#b7c6c5]">Sort</Label>
+          <NativeSelect id="my-borrow-sort" value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="w-full [&_select]:h-11 [&_select]:border-0 [&_select]:bg-[#223638] [&_select]:px-3 [&_select]:text-white [&_svg]:text-[#b7c6c5] [&_option]:bg-[#223638] [&_option]:text-white">
+            <NativeSelectOption value="latest">Newest first</NativeSelectOption>
+            <NativeSelectOption value="oldest">Oldest first</NativeSelectOption>
+          </NativeSelect>
+        </div>
+        <Link href="/all-books" className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[#a9e9cd] px-6 text-sm font-medium text-[#102625] hover:bg-[#c4f4dc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd]">
+          <Plus aria-hidden="true" className="size-4" /> Borrow books
+        </Link>
+      </div>
+
+      {active.length > 0 ? sortedBorrows.length === 0 ? (
+        <p className="mt-10 rounded-xl bg-[#172b2c] p-8 text-center text-sm text-[#b7c6c5]">No borrowed books match your search.</p>
+      ) : (
         <section aria-label="Your borrowed books" className="mt-10 rounded-xl bg-[#172b2c] p-5 sm:p-7">
-          <div className="hidden grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_auto] gap-6 pb-3 text-xs uppercase text-[#9badae] md:grid">
-            <span>Book</span><span>Borrow date</span><span>Due date</span><span className="min-w-32 text-center">Action</span>
+          <div className="hidden grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_10rem] gap-6 pb-3 text-xs uppercase text-[#9badae] md:grid">
+            <span>Book</span><span>Borrow date</span><span>Due date</span><span className="text-center">Action</span>
           </div>
           <div className="divide-y divide-white/5">
-            {active.map((borrow) => <BorrowedBookCard key={borrow._id} borrow={borrow} daysLeft={daysLeft(borrow)} />)}
+            {sortedBorrows.map((borrow) => <BorrowedBookCard key={borrow._id} borrow={borrow} daysLeft={daysLeft(borrow)} />)}
           </div>
         </section>
       ) : (

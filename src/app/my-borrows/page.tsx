@@ -28,6 +28,20 @@ async function AuthenticatedBorrows() {
         }
       }
     }
+
+    borrows = await Promise.all(borrows.map(async (borrow) => {
+      if (borrow.author || new Date(borrow.dueDate).getTime() <= now) return borrow;
+
+      try {
+        const response = await fetch(`${apiUrl}/all-books/${borrow.bookId}`, { cache: "no-store" });
+        if (!response.ok) return borrow;
+        const book = await response.json();
+        return { ...borrow, author: book?.author };
+      } catch {
+        // Keep the borrow visible even if its book details cannot be loaded.
+        return borrow;
+      }
+    }));
   } catch {
     loadError = true;
   }

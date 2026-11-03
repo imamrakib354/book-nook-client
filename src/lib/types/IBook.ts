@@ -3,10 +3,11 @@ export interface IBook {
   title: string;
   author: string;
   category: string;
-  copies: string;
-  borrowDays: string;
+  copies: number;
+  borrowDays: number;
   coverUrl: string;
   description: string;
   ownerName: string;
   ownerEmail: string;
+  borrowCount?: number;
 }

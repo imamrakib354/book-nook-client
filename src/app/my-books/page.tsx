@@ -2,16 +2,11 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { BookOpen, Plus } from "lucide-react";
 
-import MyBookCard from "@/components/My-Page/myBookCard";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import MyBooks from "@/components/My-Page/myBooks";
 import type { IBook } from "@/lib/types/IBook";
 import { requireSession } from "@/lib/require-session";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-const labelClass = "mb-2 text-xs font-normal text-[#b7c6c5]";
-const inputClass = "h-11 border-0 bg-[#223638] px-3 text-white placeholder:text-[#91a4a4] focus-visible:border-[#a9e9cd] focus-visible:ring-[#a9e9cd]/30";
 
 const MyBooksSkeleton = () => (
   <div aria-label="Loading your books" className="mt-9 animate-pulse">
@@ -79,38 +74,9 @@ const MyBooksContent = async () => {
             ))}
           </section>
 
-          <div className="mt-9 grid items-end gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(10rem,0.4fr)_auto]">
-            <div>
-              <Label htmlFor="my-book-search" className={labelClass}>Search my books</Label>
-              <Input id="my-book-search" type="search" placeholder="Find a book..." className={inputClass} />
-            </div>
-            <div>
-              <Label htmlFor="my-book-sort" className={labelClass}>Sort</Label>
-              <NativeSelect id="my-book-sort" defaultValue="latest" className="w-full [&_select]:h-11 [&_select]:border-0 [&_select]:bg-[#223638] [&_select]:px-3 [&_select]:text-white [&_svg]:text-[#b7c6c5]">
-                <NativeSelectOption value="latest">Newest first</NativeSelectOption>
-                <NativeSelectOption value="oldest">Oldest first</NativeSelectOption>
-              </NativeSelect>
-            </div>
-            <Link href="/add-book" className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[#a9e9cd] px-6 text-sm font-medium text-[#102625] hover:bg-[#c4f4dc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd]">
-              <Plus aria-hidden="true" className="size-4" /> Add book
-            </Link>
-          </div>
-
-          {books.length === 0 ? (
+          <MyBooks books={books}>
             <EmptyBooks />
-          ) : (
-            <section aria-label="Books you shared" className="mt-10 rounded-xl bg-[#172b2c] p-4 sm:p-6">
-              <div className="hidden grid-cols-[minmax(0,2fr)_minmax(0,0.8fr)_minmax(0,0.5fr)_auto] gap-4 pb-4 text-xs uppercase tracking-wide text-[#9badae] sm:grid">
-                <span>Book / Author</span>
-                <span>Category</span>
-                <span>Copies</span>
-                <span className="text-right">Actions</span>
-              </div>
-              <div className="divide-y divide-white/5">
-                {books.map((book) => <MyBookCard key={book._id} book={book} />)}
-              </div>
-            </section>
-          )}
+          </MyBooks>
         </>
       )}
     </>
