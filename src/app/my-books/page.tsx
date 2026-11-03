@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { BookOpen, Plus } from "lucide-react";
 
-import MyBookCard from "@/components/myBookCard";
+import MyBookCard from "@/components/My-Page/myBookCard";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";

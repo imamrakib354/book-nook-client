@@ -3,7 +3,8 @@ import Link from "next/link";
 import { BookOpen } from "lucide-react";
 
 import type { IBook } from "@/lib/types/IBook";
-import EditBook from "@/components/editBook";
+import EditBook from "@/components/My-Page/editBook";
+import DeleteBook from "@/components/My-Page/deleteBook";
 
 const MyBookCard = ({ book }: { book: IBook }) => (
   <div className="grid gap-3 py-4 text-sm text-[#d9e3e0] sm:grid-cols-[minmax(0,2fr)_minmax(0,0.8fr)_minmax(0,0.5fr)_auto] sm:items-center sm:gap-4">
@@ -29,7 +30,7 @@ const MyBookCard = ({ book }: { book: IBook }) => (
 
       <EditBook book={book} />
 
-      <button type="button" disabled title="Deleting is coming soon" className="h-9 rounded-lg bg-[#633238] px-4 text-xs text-[#fff0ee] disabled:cursor-not-allowed">Delete</button>
+      <DeleteBook id={book._id} />
 
     </div>
   </div>
