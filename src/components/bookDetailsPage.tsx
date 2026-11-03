@@ -2,10 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 
 import type { IBook } from "@/lib/types/IBook";
+import BorrowBook from "@/components/My-Borrows-Page/borrowBook";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-const BookDetailsPage = async ({ book }: { book: IBook }) => {
+const BookDetailsPage = async ({ book, user }: { book: IBook; user: { name: string; email: string } }) => {
   let suggestions: IBook[] = [];
   let suggestionsFailed = false;
 
@@ -77,9 +78,7 @@ const BookDetailsPage = async ({ book }: { book: IBook }) => {
             </div>
 
             <div className="mt-6 flex flex-wrap gap-3">
-              <button type="button" disabled title="Borrowing is coming soon" className="h-11 min-w-44 rounded-lg bg-[#a9e9cd] px-5 text-sm font-medium text-[#102625] disabled:cursor-not-allowed disabled:opacity-75">
-                Borrow this book <span aria-hidden="true">→</span>
-              </button>
+              <BorrowBook book={book} user={user} />
               <Link href="/all-books" className="flex h-11 min-w-36 items-center justify-center rounded-lg bg-[#223638] px-5 text-sm text-[#d2dddb] hover:bg-[#30484a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd]">
                 Back to all books
               </Link>

@@ -27,7 +27,7 @@ const BookDetailsSkeleton = () => (
 );
 
 const BookContent = async ({ params }: BookPageProps) => {
-  await requireSession();
+  const { user } = await requireSession();
   const { id } = await params;
   const response = await fetch(`${apiUrl}/all-books/${encodeURIComponent(id)}`, { cache: "no-store" });
 
@@ -37,7 +37,7 @@ const BookContent = async ({ params }: BookPageProps) => {
   const book: IBook = await response.json();
   if (!book) notFound();
 
-  return <BookDetailsPage book={book} />;
+  return <BookDetailsPage book={book} user={{ name: user.name, email: user.email }} />;
 };
 
 const BookPage = (props: BookPageProps) => (
