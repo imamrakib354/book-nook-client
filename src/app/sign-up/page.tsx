@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -15,15 +15,30 @@ const labelClass = "mb-2 text-xs font-normal text-[#b7c6c5]";
 
 const SignUpPage = () => {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+
+  useEffect(() => {
+    const form = formRef.current;
+    const resetForm = () => form?.reset();
+
+    resetForm();
+    // Clear browser-restored values as well as values in a cached route.
+    window.addEventListener("pageshow", resetForm);
+    return () => {
+      window.removeEventListener("pageshow", resetForm);
+      resetForm();
+    };
+  }, []);
 
   const handleEmailSignUp = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isSubmitting) return;
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const name = String(formData.get("name") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
     const image = String(formData.get("image") ?? "").trim();
@@ -50,7 +65,9 @@ const SignUpPage = () => {
       }
 
       if (data) {
-        router.push("/");
+        form.reset();
+        setShowPassword(false);
+        router.replace("/");
         router.refresh();
       } else {
         setFormError("Could not create your account. Please try again.");
@@ -87,14 +104,14 @@ const SignUpPage = () => {
             Create your account
           </h1>
 
-          <form onSubmit={handleEmailSignUp} className="mt-9 space-y-5">
+          <form ref={formRef} onSubmit={handleEmailSignUp} autoComplete="off" className="mt-9 space-y-5">
             <div>
               <Label htmlFor="sign-up-name" className={labelClass}>Full name</Label>
-              <Input id="sign-up-name" name="name" type="text" autoComplete="name" required placeholder="Your name" className={inputClass} />
+              <Input id="sign-up-name" name="name" type="text" autoComplete="off" required placeholder="Your name" className={inputClass} />
             </div>
             <div>
               <Label htmlFor="sign-up-email" className={labelClass}>Email</Label>
-              <Input id="sign-up-email" name="email" type="email" autoComplete="email" required placeholder="you@example.com" className={inputClass} />
+              <Input id="sign-up-email" name="email" type="email" autoComplete="off" required placeholder="you@example.com" className={inputClass} />
             </div>
             <div>
               <Label htmlFor="sign-up-image" className={labelClass}>Profile Pic URL <span className="text-[#91a4a4]">(optional)</span></Label>
