@@ -2,34 +2,23 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
 import BookDetailsPage from "@/components/bookDetailsPage";
+import { PageSkeleton } from "@/components/loading-skeletons";
 import type { IBook } from "@/lib/types/IBook";
-import { requireSession } from "@/lib/require-session";
+import { getCurrentUser } from "@/lib/get-current-user";
+import { getTokenFromServer } from "@/lib/getTokenFromServer";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 type BookPageProps = { params: Promise<{ id: string }> };
 
-const BookDetailsSkeleton = () => (
-  <main className="flex-1 bg-[#0b191a] px-5 py-10 sm:px-8 lg:px-10">
-    <div className="mx-auto max-w-6xl animate-pulse">
-      <div className="h-4 w-48 rounded bg-[#223638]" />
-      <div className="mt-8 grid gap-9 md:grid-cols-2 lg:gap-12">
-        <div className="h-[480px] rounded-xl bg-[#172b2c]" />
-        <div className="space-y-6 pt-2">
-          <div className="h-4 w-36 rounded bg-[#223638]" />
-          <div className="h-12 w-3/4 rounded bg-[#223638]" />
-          <div className="h-4 w-40 rounded bg-[#223638]" />
-          <div className="h-20 rounded bg-[#223638]" />
-          <div className="h-32 rounded-xl bg-[#172b2c]" />
-        </div>
-      </div>
-    </div>
-  </main>
-);
-
 const BookContent = async ({ params }: BookPageProps) => {
-  const { user } = await requireSession();
+  const user = await getCurrentUser();
+  if (!user) return null;
   const { id } = await params;
-  const response = await fetch(`${apiUrl}/all-books/${encodeURIComponent(id)}`, { cache: "no-store" });
+  const token = await getTokenFromServer();
+  const response = await fetch(`${apiUrl}/books/${encodeURIComponent(id)}`, {
+    headers: { authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
 
   if (response.status === 404) notFound();
   if (!response.ok) throw new Error("Unable to load book details.");
@@ -41,7 +30,7 @@ const BookContent = async ({ params }: BookPageProps) => {
 };
 
 const BookPage = (props: BookPageProps) => (
-  <Suspense fallback={<BookDetailsSkeleton />}>
+  <Suspense fallback={<PageSkeleton variant="details" />}>
     <BookContent params={props.params} />
   </Suspense>
 );

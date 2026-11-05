@@ -1,13 +1,15 @@
 import { Suspense } from "react";
 
 import AddBookForm from "@/components/add-book-form";
-import { requireSession } from "@/lib/require-session";
+import { PageSkeleton } from "@/components/loading-skeletons";
+import { getCurrentUser } from "@/lib/get-current-user";
 
 async function AuthenticatedAddBook() {
-  const { user } = await requireSession();
+  const user = await getCurrentUser();
+  if (!user) return null;
   return <AddBookForm name={user.name} email={user.email} />;
 }
 
 export default function AddBookPage() {
-  return <Suspense fallback={<main className="flex-1 bg-[#0b191a]" />}><AuthenticatedAddBook /></Suspense>;
+  return <Suspense fallback={<PageSkeleton variant="form" />}><AuthenticatedAddBook /></Suspense>;
 }

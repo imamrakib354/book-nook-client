@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
+import { getTokenFromServer } from "@/lib/getTokenFromServer";
 
 export async function POST(request: Request) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -34,9 +35,13 @@ export async function POST(request: Request) {
 
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-    const response = await fetch(`${apiUrl}/add-book`, {
+    const token = await getTokenFromServer();
+    const response = await fetch(`${apiUrl}/books`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify(book),
       cache: "no-store",
     });

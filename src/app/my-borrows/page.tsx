@@ -1,50 +1,49 @@
 import { Suspense } from "react";
+import { PageSkeleton } from "@/components/loading-skeletons";
 
-import { requireSession } from "@/lib/require-session";
+import { getCurrentUser } from "@/lib/get-current-user";
+import { getTokenFromServer } from "@/lib/getTokenFromServer";
 import MyBorrows from "@/components/My-Borrows-Page/myBorrows";
 import type { IBorrow } from "@/lib/types/IBorrow";
 
 async function AuthenticatedBorrows() {
-  const { user } = await requireSession();
+  const user = await getCurrentUser();
+  if (!user) return null;
   let borrows: IBorrow[] = [];
   let loadError = false;
-  // eslint-disable-next-line react-hooks/purity -- Request-time snapshot in an async Server Component.
-  const now = Date.now();
 
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-    const response = await fetch(`${apiUrl}/my-borrows/${encodeURIComponent(user.email)}`, { cache: "no-store" });
+    const token = await getTokenFromServer();
+    const response = await fetch(`${apiUrl}/borrows`, {
+      headers: { authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
     if (!response.ok) throw new Error("Unable to load borrowed books");
     borrows = await response.json();
 
-    for (const borrow of borrows) {
-      if (new Date(borrow.dueDate).getTime() <= now) {
-        const response = await fetch(`${apiUrl}/my-borrows/${borrow._id}`, {
-          method: "DELETE",
-        });
-        const result = await response.json();
-        if (response.status !== 404 && (!response.ok || result.deletedCount !== 1)) {
-          throw new Error("Unable to return expired book");
-        }
-      }
-    }
-
     borrows = await Promise.all(borrows.map(async (borrow) => {
-      if (borrow.author || new Date(borrow.dueDate).getTime() <= now) return borrow;
-
+      if (borrow.author) return borrow;
       try {
-        const response = await fetch(`${apiUrl}/all-books/${borrow.bookId}`, { cache: "no-store" });
-        if (!response.ok) return borrow;
-        const book = await response.json();
+        const bookResponse = await fetch(`${apiUrl}/books/${encodeURIComponent(borrow.bookId)}`, {
+          headers: { authorization: `Bearer ${token}` },
+          cache: "no-store",
+        });
+        if (!bookResponse.ok) return borrow;
+        const book = await bookResponse.json();
         return { ...borrow, author: book?.author };
       } catch {
-        // Keep the borrow visible even if its book details cannot be loaded.
+        // Keep the borrow and Return Book action available if book details cannot be loaded.
         return borrow;
       }
     }));
+
   } catch {
     loadError = true;
   }
+
+  // eslint-disable-next-line react-hooks/purity -- Request-time snapshot for consistent server/client dates.
+  const now = Date.now();
 
   return (
     <main className="flex-1 bg-[#0b191a] px-5 py-12 text-white sm:px-8 sm:py-16 lg:px-10">
@@ -60,5 +59,5 @@ async function AuthenticatedBorrows() {
 }
 
 export default function MyBorrowsPage() {
-  return <Suspense fallback={<main className="flex-1 bg-[#0b191a]" />}><AuthenticatedBorrows /></Suspense>;
+  return <Suspense fallback={<PageSkeleton variant="borrows" />}><AuthenticatedBorrows /></Suspense>;
 }

@@ -1,22 +1,29 @@
 import { Suspense } from "react";
+import { PageSkeleton } from "@/components/loading-skeletons";
 
 import { ProfileAvatar } from "@/components/profilePage/profile-menu";
 import ProfileDialogBox from "@/components/profilePage/profileDialogBox";
-import { requireSession } from "@/lib/require-session";
+import { getCurrentUser } from "@/lib/get-current-user";
+import { getTokenFromServer } from "@/lib/getTokenFromServer";
 import type { IBook } from "@/lib/types/IBook";
 import type { IBorrow } from "@/lib/types/IBorrow";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 async function AuthenticatedProfile() {
-  const { user } = await requireSession();
+  const user = await getCurrentUser();
+  if (!user) return null;
   let books: IBook[] = [];
   let loadError = false;
   let borrowedCount: number | string = "—";
   let borrowLoadError = false;
 
   try {
-    const response = await fetch(`${apiUrl}/my-books?email=${encodeURIComponent(user.email)}`, { cache: "no-store" });
+    const token = await getTokenFromServer();
+    const response = await fetch(`${apiUrl}/books?mine=true`, {
+      headers: { authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
     if (!response.ok) throw new Error("Failed to load your books.");
     books = (await response.json()) as IBook[];
     books = books.filter((book) => book.ownerEmail?.toLowerCase() === user.email.toLowerCase());
@@ -25,12 +32,14 @@ async function AuthenticatedProfile() {
   }
 
   try {
-    const response = await fetch(`${apiUrl}/my-borrows/${encodeURIComponent(user.email)}`, { cache: "no-store" });
+    const token = await getTokenFromServer();
+    const response = await fetch(`${apiUrl}/borrows`, {
+      headers: { authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
     if (!response.ok) throw new Error("Failed to load borrowed books.");
     const borrows: IBorrow[] = await response.json();
-    // eslint-disable-next-line react-hooks/purity -- Request-time snapshot in an async Server Component.
-    const now = Date.now();
-    borrowedCount = borrows.filter((borrow) => new Date(borrow.dueDate).getTime() > now).length;
+    borrowedCount = borrows.length;
   } catch {
     borrowLoadError = true;
   }
@@ -78,5 +87,5 @@ async function AuthenticatedProfile() {
 }
 
 export default function ProfilePage() {
-  return <Suspense fallback={<main className="flex-1 bg-[#0b191a]" />}><AuthenticatedProfile /></Suspense>;
+  return <Suspense fallback={<PageSkeleton variant="profile" />}><AuthenticatedProfile /></Suspense>;
 }

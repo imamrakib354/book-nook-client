@@ -8,6 +8,7 @@ import { Eye, EyeOff } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth-client";
 
 const inputClass = "h-11 border-0 bg-[#223638] px-3 text-white placeholder:text-[#91a4a4] focus-visible:border-[#a9e9cd] focus-visible:ring-[#a9e9cd]/30";
@@ -42,7 +43,10 @@ const SignInPage = () => {
       if (data) {
         form.reset();
         setShowPassword(false);
-        router.replace("/");
+        const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl");
+        const destination = callbackUrl?.startsWith("/") && !callbackUrl.startsWith("//") && !callbackUrl.includes("\\")
+          ? callbackUrl : "/";
+        router.replace(destination);
         router.refresh();
       } else {
         setFormError("Could not sign in. Please try again.");
@@ -119,7 +123,8 @@ const SignInPage = () => {
 
             {formError && <p role="alert" className="text-sm text-[#f3b7a8]">{formError}</p>}
 
-            <button type="submit" disabled={isSubmitting} className="h-11 w-full rounded-lg bg-[#a9e9cd] text-sm font-medium text-[#102625] hover:bg-[#c4f4dc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd] disabled:cursor-not-allowed disabled:opacity-60">
+            <button type="submit" disabled={isSubmitting} aria-busy={isSubmitting} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#a9e9cd] text-sm font-medium text-[#102625] hover:bg-[#c4f4dc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd] disabled:cursor-not-allowed disabled:opacity-60">
+              {isSubmitting && <Spinner />}
               {isSubmitting ? "Signing in..." : "Sign in"}
             </button>
           </form>

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import type { IBook } from "@/lib/types/IBook";
+import { getTokenFromServer } from "@/lib/getTokenFromServer";
 import BorrowBook from "@/components/My-Borrows-Page/borrowBook";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -11,9 +12,13 @@ const BookDetailsPage = async ({ book, user }: { book: IBook; user: { name: stri
   let suggestionsFailed = false;
 
   try {
+    const token = await getTokenFromServer();
     const response = await fetch(
-      `${apiUrl}/all-books/category/${encodeURIComponent(book.category)}`,
-      { cache: "no-store" },
+      `${apiUrl}/books?category=${encodeURIComponent(book.category)}`,
+      {
+        headers: { authorization: `Bearer ${token}` },
+        cache: "no-store",
+      },
     );
     
     if (!response.ok) throw new Error("Unable to load similar books.");

@@ -7,6 +7,7 @@ import { useState, type FormEvent, type MouseEvent } from "react";
 import { BookOpen, Eye } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +23,7 @@ import {
   NativeSelectOption,
 } from "@/components/ui/native-select";
 import type { IBook } from "@/lib/types/IBook";
+import { getTokenFromClient } from "@/lib/getTokenFromClient";
 
 const inputClass =
   "h-10 border-0 bg-[#223638] px-3 text-white placeholder:text-[#91a4a4] focus-visible:ring-[#a9e9cd]/30";
@@ -61,10 +63,12 @@ const EditBook = ({ book }: { book: IBook }) => {
     setSubmitting(true);
 
     try {
-      const response = await fetch(`${apiUrl}/all-books/${book._id}`, {
+      const token = await getTokenFromClient();
+      const response = await fetch(`${apiUrl}/books/${book._id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(updatedData),
       });
@@ -273,6 +277,7 @@ const EditBook = ({ book }: { book: IBook }) => {
                 disabled={submitting}
                 className="h-10 bg-[#a9e9cd] px-5 text-[#102625] hover:bg-[#c4f4dc]"
               >
+                {submitting && <Spinner />}
                 {submitting ? "Saving..." : "Save changes"}
               </Button>
             </div>

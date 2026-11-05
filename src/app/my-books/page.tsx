@@ -3,27 +3,12 @@ import Link from "next/link";
 import { BookOpen, Plus } from "lucide-react";
 
 import MyBooks from "@/components/My-Page/myBooks";
+import { MyBooksSkeleton } from "@/components/loading-skeletons";
 import type { IBook } from "@/lib/types/IBook";
-import { requireSession } from "@/lib/require-session";
+import { getCurrentUser } from "@/lib/get-current-user";
+import { getTokenFromServer } from "@/lib/getTokenFromServer";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
-const MyBooksSkeleton = () => (
-  <div aria-label="Loading your books" className="mt-9 animate-pulse">
-    <div className="h-20 rounded-xl bg-[#172b2c]" />
-    <div className="mt-8 grid gap-4 sm:grid-cols-3">
-      {Array.from({ length: 3 }).map((_, index) => (
-        <div key={index} className="h-24 rounded-xl bg-[#172b2c]" />
-      ))}
-    </div>
-    <div className="mt-9 h-11 rounded-lg bg-[#223638]" />
-    <div className="mt-10 space-y-3 rounded-xl bg-[#172b2c] p-5">
-      {Array.from({ length: 4 }).map((_, index) => (
-        <div key={index} className="h-14 rounded-lg bg-[#223638]" />
-      ))}
-    </div>
-  </div>
-);
 
 const EmptyBooks = () => (
   <div className="mt-10 rounded-2xl border border-[#294344] bg-[#172b2c] px-6 py-12 text-center sm:py-16">
@@ -39,12 +24,17 @@ const EmptyBooks = () => (
 );
 
 const MyBooksContent = async () => {
-  const { user } = await requireSession();
+  const user = await getCurrentUser();
+  if (!user) return null;
   let books: IBook[] = [];
   let loadError = false;
 
   try {
-    const response = await fetch(`${apiUrl}/my-books?email=${encodeURIComponent(user.email)}`, { cache: "no-store" });
+    const token = await getTokenFromServer();
+    const response = await fetch(`${apiUrl}/books?mine=true`, {
+      headers: { authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
     if (!response.ok) throw new Error("Failed to load your books.");
     books = (await response.json()) as IBook[];
     books = books.filter((book) => book.ownerEmail?.toLowerCase() === user.email.toLowerCase());

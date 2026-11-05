@@ -1,8 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { headers } from "next/headers";
 
-import { auth } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/get-current-user";
 import ProfileDropdown from "@/components/profilePage/profile-dropdown";
 
 const publicNavigation = [
@@ -17,8 +16,8 @@ const privateNavigation = [
 ];
 
 const Navbar = async () => {
-  const session = await auth.api.getSession({ headers: await headers() });
-  const navigation = session ? [...publicNavigation, ...privateNavigation] : publicNavigation;
+  const user = await getCurrentUser();
+  const navigation = user ? [...publicNavigation, ...privateNavigation] : publicNavigation;
   return (
     <header className="sticky top-0 z-50 border-b border-white/5 bg-[#0e1d1e] text-white">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-5 px-5 py-3 sm:px-8 lg:flex-nowrap lg:gap-8 lg:px-10">
@@ -45,7 +44,7 @@ const Navbar = async () => {
           </ul>
         </nav>
 
-        {session ? <ProfileDropdown name={session.user.name} email={session.user.email} image={session.user.image} /> : <div className="flex shrink-0 items-center gap-2 text-xs sm:text-sm">
+        {user ? <ProfileDropdown name={user.name} email={user.email} image={user.image} /> : <div className="flex shrink-0 items-center gap-2 text-xs sm:text-sm">
           
           <Link href="/sign-in" className="inline-flex h-9 items-center justify-center rounded-md bg-[#223638] px-3 text-[#d2dddb] transition-colors hover:bg-[#30484a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd] sm:px-4">
             Log in

@@ -1,10 +1,10 @@
+import "server-only";
+
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
 
-export async function requireSession() {
+export async function getCurrentUser() {
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) redirect("/sign-in");
-  return session;
+  return session?.user ?? null;
 }

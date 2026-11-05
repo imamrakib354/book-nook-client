@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Eye, UserRound } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -113,7 +114,7 @@ const ProfileDialogBox = ({ user }: { user: { name: string; image?: string | nul
           {error && <p role="alert" className="text-sm text-[#f3b7a8]">{error}</p>}
           <div className="flex justify-end gap-3 pt-3">
             <Button type="button" disabled={isUpdating} onClick={() => setOpen(false)} className="h-10 bg-[#223638] px-5 text-[#d9e3e0] hover:bg-[#30484a]">Cancel</Button>
-            <Button type="submit" disabled={isUpdating} className="h-10 bg-[#a9e9cd] px-5 text-[#102625] hover:bg-[#c4f4dc]">{isUpdating ? "Saving..." : "Save changes"}</Button>
+            <Button type="submit" disabled={isUpdating} className="h-10 bg-[#a9e9cd] px-5 text-[#102625] hover:bg-[#c4f4dc]">{isUpdating && <Spinner />}{isUpdating ? "Saving..." : "Save changes"}</Button>
           </div>
 
         </form>}

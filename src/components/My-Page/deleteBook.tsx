@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Spinner } from "@/components/ui/spinner";
+import { getTokenFromClient } from "@/lib/getTokenFromClient";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,8 +29,10 @@ const DeleteBook = ({ id }: { id: string }) => {
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-      const response = await fetch(`${apiUrl}/all-books/${id}`, {
+      const token = await getTokenFromClient();
+      const response = await fetch(`${apiUrl}/books/${id}`, {
         method: "DELETE",
+        headers: { authorization: `Bearer ${token}` },
       });
       const result = await response.json();
 
@@ -70,6 +74,7 @@ const DeleteBook = ({ id }: { id: string }) => {
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction onClick={handleDelete} disabled={deleting} className="h-9 bg-[#633238] px-5 text-xs text-[#fff0ee] hover:bg-[#7a3c45]">
+            {deleting && <Spinner />}
             {deleting ? "Deleting..." : "Delete book"}
           </AlertDialogAction>
         </AlertDialogFooter>

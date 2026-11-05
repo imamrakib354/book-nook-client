@@ -8,6 +8,7 @@ import { Eye, EyeOff } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth-client";
 
 const inputClass = "h-11 border-0 bg-[#223638] px-3 text-white placeholder:text-[#91a4a4] focus-visible:border-[#a9e9cd] focus-visible:ring-[#a9e9cd]/30";
@@ -44,6 +45,11 @@ const SignUpPage = () => {
     const image = String(formData.get("image") ?? "").trim();
     const password = String(formData.get("password") ?? "");
 
+    if (password.length < 6 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9\s]/.test(password)) {
+      setFormError("Use at least 6 characters, including an uppercase letter, a lowercase letter, a number, and a special character.");
+      return;
+    }
+
     if (image) {
       try {
         if (!["http:", "https:"].includes(new URL(image).protocol)) throw new Error("Invalid image URL");
@@ -67,7 +73,7 @@ const SignUpPage = () => {
       if (data) {
         form.reset();
         setShowPassword(false);
-        router.replace("/");
+        router.replace("/sign-in");
         router.refresh();
       } else {
         setFormError("Could not create your account. Please try again.");
@@ -129,7 +135,7 @@ const SignUpPage = () => {
                   name="password"
                   type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
-                  minLength={8}
+                  minLength={6}
                   required
                   placeholder="Create a password"
                   className={`${inputClass} pr-11`}
@@ -145,12 +151,13 @@ const SignUpPage = () => {
                 </button>
               </div>
 
-              <p className="mt-2 text-xs text-[#9badae]">Use at least 8 characters.</p>
+              <p className="mt-2 text-xs text-[#9badae]">At least 6 characters with uppercase, lowercase, a number, and a special character.</p>
             </div>
 
             {formError && <p role="alert" className="text-sm text-[#f3b7a8]">{formError}</p>}
 
-            <button type="submit" disabled={isSubmitting} className="h-11 w-full rounded-lg bg-[#a9e9cd] text-sm font-medium text-[#102625] hover:bg-[#c4f4dc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd] disabled:cursor-not-allowed disabled:opacity-60">
+            <button type="submit" disabled={isSubmitting} aria-busy={isSubmitting} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#a9e9cd] text-sm font-medium text-[#102625] hover:bg-[#c4f4dc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd] disabled:cursor-not-allowed disabled:opacity-60">
+              {isSubmitting && <Spinner />}
               {isSubmitting ? "Creating account..." : "Create account"}
             </button>
           </form>
