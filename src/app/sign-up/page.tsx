@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth-client";
+import ProfilePhotoInput, { type ProfilePhotoInputHandle } from "@/components/profile-photo-input";
 
 const inputClass = "h-11 border-0 bg-[#223638] px-3 text-white placeholder:text-[#91a4a4] focus-visible:border-[#a9e9cd] focus-visible:ring-[#a9e9cd]/30";
 const labelClass = "mb-2 text-xs font-normal text-[#b7c6c5]";
@@ -17,9 +18,12 @@ const labelClass = "mb-2 text-xs font-normal text-[#b7c6c5]";
 const SignUpPage = () => {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const photoRef = useRef<ProfilePhotoInputHandle>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [socialProvider, setSocialProvider] = useState<"google" | "github" | null>(null);
   const [formError, setFormError] = useState("");
+  const isBusy = isSubmitting || socialProvider !== null;
 
   useEffect(() => {
     const form = formRef.current;
@@ -36,13 +40,12 @@ const SignUpPage = () => {
 
   const handleEmailSignUp = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (isSubmitting) return;
+    if (isBusy) return;
 
     const form = event.currentTarget;
     const formData = new FormData(form);
     const name = String(formData.get("name") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
-    const image = String(formData.get("image") ?? "").trim();
     const password = String(formData.get("password") ?? "");
 
     if (password.length < 6 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9\s]/.test(password)) {
@@ -50,19 +53,11 @@ const SignUpPage = () => {
       return;
     }
 
-    if (image) {
-      try {
-        if (!["http:", "https:"].includes(new URL(image).protocol)) throw new Error("Invalid image URL");
-      } catch {
-        setFormError("Enter a valid http or https profile picture URL.");
-        return;
-      }
-    }
-
     setFormError("");
     setIsSubmitting(true);
 
     try {
+      const image = await photoRef.current!.getImage();
       const { data, error } = await authClient.signUp.email({ name, email, password, image: image || undefined });
 
       if (error) {
@@ -78,10 +73,32 @@ const SignUpPage = () => {
       } else {
         setFormError("Could not create your account. Please try again.");
       }
-    } catch {
-      setFormError("Unable to reach the sign-up service. Please try again.");
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "Unable to reach the sign-up service. Please try again.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleSocialLogin = async (provider: "google" | "github") => {
+    if (isBusy) return;
+
+    setFormError("");
+    setSocialProvider(provider);
+
+    try {
+      const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl");
+      const callbackURL = callbackUrl?.startsWith("/") && !callbackUrl.startsWith("//") && !callbackUrl.includes("\\")
+        ? callbackUrl : "/";
+      const { error } = await authClient.signIn.social({ provider, callbackURL });
+
+      if (error) {
+        setFormError(error.message || "Could not start social sign-up. Please try again.");
+        setSocialProvider(null);
+      }
+    } catch {
+      setFormError("Unable to reach the sign-up service. Please try again.");
+      setSocialProvider(null);
     }
   };
 
@@ -110,7 +127,7 @@ const SignUpPage = () => {
             Create your account
           </h1>
 
-          <form ref={formRef} onSubmit={handleEmailSignUp} autoComplete="off" className="mt-9 space-y-5">
+          <form ref={formRef} onSubmit={handleEmailSignUp} autoComplete="off" aria-busy={isBusy} className="mt-9 space-y-5">
 
             <div>
               <Label htmlFor="sign-up-name" className={labelClass}>Full name</Label>
@@ -122,10 +139,7 @@ const SignUpPage = () => {
               <Input id="sign-up-email" name="email" type="email" autoComplete="off" required placeholder="you@example.com" className={inputClass} />
             </div>
 
-            <div>
-              <Label htmlFor="sign-up-image" className={labelClass}>Profile Pic URL <span className="text-[#91a4a4]">(optional)</span></Label>
-              <Input id="sign-up-image" name="image" type="url" placeholder="https://..." className={inputClass} />
-            </div>
+            <ProfilePhotoInput ref={photoRef} disabled={isBusy} />
 
             <div>
               <Label htmlFor="sign-up-password" className={labelClass}>Password</Label>
@@ -156,7 +170,7 @@ const SignUpPage = () => {
 
             {formError && <p role="alert" className="text-sm text-[#f3b7a8]">{formError}</p>}
 
-            <button type="submit" disabled={isSubmitting} aria-busy={isSubmitting} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#a9e9cd] text-sm font-medium text-[#102625] hover:bg-[#c4f4dc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd] disabled:cursor-not-allowed disabled:opacity-60">
+            <button type="submit" disabled={isBusy} aria-busy={isSubmitting} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#a9e9cd] text-sm font-medium text-[#102625] hover:bg-[#c4f4dc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd] disabled:cursor-not-allowed disabled:opacity-60">
               {isSubmitting && <Spinner />}
               {isSubmitting ? "Creating account..." : "Create account"}
             </button>
@@ -171,10 +185,12 @@ const SignUpPage = () => {
           </div>
 
           <div className="space-y-3">
-            <button type="button" disabled title="Google sign-up is coming soon" className="flex h-11 w-full items-center justify-center gap-3 rounded-lg bg-[#223638] text-sm text-[#d2dddb] disabled:cursor-not-allowed">
+            <button type="button" onClick={() => handleSocialLogin("google")} disabled={isBusy} aria-busy={socialProvider === "google"} className="flex h-11 w-full items-center justify-center gap-3 rounded-lg bg-[#223638] text-sm text-[#d2dddb] disabled:cursor-not-allowed disabled:opacity-60">
+              {socialProvider === "google" && <Spinner />}
               <span aria-hidden="true" className="text-base font-semibold">G</span> Continue with Google
             </button>
-            <button type="button" disabled title="GitHub sign-up is coming soon" className="flex h-11 w-full items-center justify-center gap-3 rounded-lg bg-[#223638] text-sm text-[#d2dddb] disabled:cursor-not-allowed">
+            <button type="button" onClick={() => handleSocialLogin("github")} disabled={isBusy} aria-busy={socialProvider === "github"} className="flex h-11 w-full items-center justify-center gap-3 rounded-lg bg-[#223638] text-sm text-[#d2dddb] disabled:cursor-not-allowed disabled:opacity-60">
+              {socialProvider === "github" && <Spinner />}
               <span aria-hidden="true" className="text-xs font-bold tracking-tight">GH</span> Continue with GitHub
             </button>
           </div>

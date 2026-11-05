@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
+import { uploadImage } from "@/lib/upload-image";
 
 const inputClass = "h-11 border-0 bg-[#223638] px-3 text-white placeholder:text-[#91a4a4] focus-visible:border-[#a9e9cd] focus-visible:ring-[#a9e9cd]/30";
 
@@ -62,23 +63,6 @@ const AddBookForm = ({ name, email }: { name: string; email: string }) => {
       setCoverError("Could not read this image. Please choose it again.");
     };
     reader.readAsDataURL(file);
-  };
-
-  const uploadImage = async (file: File) => {
-    const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
-    if (!apiKey) throw new Error("Image uploading is not configured. NEXT_PUBLIC_IMGBB_API_KEY is missing.");
-
-    const formData = new FormData();
-    formData.append("image", file);
-    const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-      method: "POST",
-      body: formData,
-    });
-    const result = await response.json();
-    if (!response.ok || !result.success || !result.data?.url) {
-      throw new Error(result.error?.message || "Image upload failed. Please try again.");
-    }
-    return result.data.url as string;
   };
 
   const previewCover = () => {
