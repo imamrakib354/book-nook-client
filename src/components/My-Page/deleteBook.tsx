@@ -27,7 +27,7 @@ const DeleteBook = ({ id }: { id: string }) => {
     setDeleting(true);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const token = await getTokenFromClient();
       const response = await fetch(`${apiUrl}/books/${id}`, {
         method: "DELETE",

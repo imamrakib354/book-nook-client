@@ -3,8 +3,8 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent, type MouseEvent } from "react";
-import { BookOpen, Eye } from "lucide-react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { BookOpen, Eye, Upload } from "lucide-react";
 import { toast } from "react-toastify";
 
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/native-select";
 import type { IBook } from "@/lib/types/IBook";
 import { getTokenFromClient } from "@/lib/getTokenFromClient";
+import { uploadImage } from "@/lib/upload-image";
 
 const inputClass =
   "h-10 border-border bg-field px-3 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/30";
@@ -37,16 +38,48 @@ const EditBook = ({ book }: { book: IBook }) => {
   const [open, setOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(book.coverUrl || "");
   const [submitting, setSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [coverMethod, setCoverMethod] = useState<"upload" | "url">("url");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState(book.coverUrl || "");
+  const imageReader = useRef<FileReader | null>(null);
 
-  const previewCover = (event: MouseEvent<HTMLButtonElement>) => {
-    const form = event.currentTarget.form;
-    if (!form) return;
+  useEffect(() => () => imageReader.current?.abort(), []);
 
-    const formData = new FormData(form);
-    const url = String(formData.get("coverUrl") ?? "").trim();
+  const changeCoverMethod = (method: "upload" | "url") => {
+    imageReader.current?.abort();
+    setCoverMethod(method);
+    setImageFile(null);
+    setImageUrl(book.coverUrl || "");
+    setPreviewUrl(book.coverUrl || "");
+  };
 
-    if (url.startsWith("https://") || url.startsWith("http://")) {
-      setPreviewUrl(url);
+  const selectImage = (file?: File) => {
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      toast.error("Choose a JPG, PNG or WebP image no larger than 5 MB.");
+      return;
+    }
+    imageReader.current?.abort();
+    const reader = new FileReader();
+    imageReader.current = reader;
+    reader.onload = () => setPreviewUrl(String(reader.result));
+    reader.onerror = () => {
+      setImageFile(null);
+      setPreviewUrl(book.coverUrl || "");
+      toast.error("Could not read this image. Choose another file.");
+    };
+    setImageFile(file);
+    reader.readAsDataURL(file);
+  };
+
+  const previewCover = () => {
+    try {
+      const url = new URL(imageUrl.trim());
+      if (!["https:", "http:"].includes(url.protocol)) throw new Error("Invalid URL");
+      setPreviewUrl(url.href);
+    } catch {
+      toast.error("Enter a valid http or https image URL.");
     }
   };
 
@@ -57,22 +90,31 @@ const EditBook = ({ book }: { book: IBook }) => {
     const formData = new FormData(event.currentTarget);
     formData.delete("title");
     formData.delete("author");
+    formData.delete("coverUrl");
     const updatedData = Object.fromEntries(formData.entries());
-
-    const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
     setSubmitting(true);
 
     try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const token = await getTokenFromClient();
+      let coverUrl = book.coverUrl;
+      if (coverMethod === "upload" && imageFile) {
+        setUploading(true);
+        coverUrl = await uploadImage(imageFile);
+        setUploading(false);
+      } else if (coverMethod === "url") {
+        const url = new URL(imageUrl.trim());
+        if (!["https:", "http:"].includes(url.protocol)) throw new Error("Enter a valid http or https image URL.");
+        coverUrl = url.href;
+      }
       const response = await fetch(`${apiUrl}/books/${book._id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(updatedData),
+        body: JSON.stringify({ ...updatedData, coverUrl }),
       });
 
       const result = await response.json();
@@ -83,9 +125,10 @@ const EditBook = ({ book }: { book: IBook }) => {
       toast.success("Book updated successfully!");
       setOpen(false);
       router.refresh();
-    } catch {
-      toast.error("Failed to update book.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to update book.");
     } finally {
+      setUploading(false);
       setSubmitting(false);
     }
   };
@@ -94,15 +137,17 @@ const EditBook = ({ book }: { book: IBook }) => {
     <Dialog
       open={open}
       onOpenChange={(value) => {
+        if (submitting) return;
         setOpen(value);
-        if (value) setPreviewUrl(book.coverUrl || "");
+        imageReader.current?.abort();
+        if (value) changeCoverMethod("url");
       }}
     >
       <DialogTrigger className="h-9 rounded-lg bg-muted px-4 text-xs text-foreground hover:bg-accent">
         Edit
       </DialogTrigger>
 
-      <DialogContent className="max-h-[90dvh] overflow-y-auto border border-border bg-card p-6 text-foreground sm:max-w-lg">
+      <DialogContent showCloseButton={!submitting} className="max-h-[90dvh] overflow-y-auto border border-border bg-card p-6 text-foreground sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="font-[family-name:var(--font-dm-serif)] text-2xl font-normal text-foreground">
             Edit book details
@@ -115,6 +160,7 @@ const EditBook = ({ book }: { book: IBook }) => {
 
         {open && (
           <form onSubmit={handleSubmit} className="mt-2 space-y-6">
+            <fieldset disabled={submitting} className="min-w-0 space-y-6">
             <p id={`identity-note-${book._id}`} className="text-sm text-muted-foreground">Title and author cannot be updated.</p>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
@@ -153,33 +199,47 @@ const EditBook = ({ book }: { book: IBook }) => {
             </div>
 
             <div>
-              <Label
-                htmlFor={`cover-${book._id}`}
-                className={labelClass}
-              >
-                Book cover image URL
-              </Label>
-
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <Input
-                  id={`cover-${book._id}`}
-                  name="coverUrl"
-                  type="url"
-                  defaultValue={book.coverUrl}
-                  required
-                  className={inputClass}
-                  placeholder="https://example.com/cover.jpg"
-                />
-
-                <Button
-                  type="button"
-                  onClick={previewCover}
-                  className="h-10 bg-[#a9e9cd] px-5 text-[#102625] hover:bg-[#c4f4dc]"
-                >
-                  <Eye className="size-4" />
-                  Preview
+              <p className="mb-3 text-sm font-medium text-foreground">Book cover</p>
+              <div className="mb-4 flex flex-wrap gap-3">
+                <Button type="button" aria-pressed={coverMethod === "upload"} onClick={() => changeCoverMethod("upload")} className={`h-10 px-4 ${coverMethod === "upload" ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-muted text-foreground hover:bg-accent"}`}>
+                  <Upload aria-hidden="true" className="size-4" /> Upload file
+                </Button>
+                <Button type="button" aria-pressed={coverMethod === "url"} onClick={() => changeCoverMethod("url")} className={`h-10 px-4 ${coverMethod === "url" ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-muted text-foreground hover:bg-accent"}`}>
+                  Paste image URL
                 </Button>
               </div>
+              {coverMethod === "upload" ? (
+                <div className="rounded-xl border border-dashed border-border bg-muted/50 p-5">
+                  <Label htmlFor={`cover-file-${book._id}`} className="mb-3 text-sm text-foreground">Choose a replacement cover</Label>
+                  <Input id={`cover-file-${book._id}`} type="file" accept="image/jpeg,image/png,image/webp" aria-describedby={`cover-help-${book._id}`} className="h-auto py-2" onChange={(event) => {
+                    selectImage(event.target.files?.[0]);
+                    event.target.value = "";
+                  }} />
+                  {imageFile && <p className="mt-3 break-all text-xs text-primary">{imageFile.name}</p>}
+                  <p id={`cover-help-${book._id}`} className="mt-3 text-xs text-muted-foreground">JPG, PNG or WebP · Up to 5 MB. Uploaded through ImgBB when you save. Leave empty to keep the current cover.</p>
+                </div>
+              ) : (
+                <>
+                  <Label htmlFor={`cover-${book._id}`} className={labelClass}>
+                    Book cover image URL
+                  </Label>
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Input
+                      id={`cover-${book._id}`}
+                      name="coverUrl"
+                      type="url"
+                      value={imageUrl}
+                      onChange={(event) => setImageUrl(event.target.value)}
+                      required
+                      className={inputClass}
+                      placeholder="https://example.com/cover.jpg"
+                    />
+                    <Button type="button" onClick={previewCover} className="h-10 bg-primary px-5 text-primary-foreground hover:bg-primary/90">
+                      <Eye aria-hidden="true" className="size-4" /> Preview
+                    </Button>
+                  </div>
+                </>
+              )}
 
               <div className="mt-4 rounded-xl bg-muted p-4">
                 <p className="mb-4 text-xs text-muted-foreground">
@@ -196,7 +256,10 @@ const EditBook = ({ book }: { book: IBook }) => {
                       height={180}
                       unoptimized
                       className="max-h-44 w-auto max-w-full rounded object-contain"
-                      onError={() => setPreviewUrl("")}
+                      onError={() => {
+                        setPreviewUrl("");
+                        toast.error("Could not load this cover. Check the URL or choose another image.");
+                      }}
                     />
                   ) : (
                     <BookOpen className="size-10 text-primary" />
@@ -269,7 +332,10 @@ const EditBook = ({ book }: { book: IBook }) => {
             <div className="flex justify-end gap-3 pt-3">
               <Button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={() => {
+                  imageReader.current?.abort();
+                  setOpen(false);
+                }}
                 className="h-10 bg-muted px-5 text-foreground hover:bg-accent"
               >
                 Cancel
@@ -278,13 +344,13 @@ const EditBook = ({ book }: { book: IBook }) => {
               <Button
                 type="submit"
                 disabled={submitting}
-                className="h-10 bg-[#a9e9cd] px-5 text-[#102625] hover:bg-[#c4f4dc]"
+                className="h-10 bg-primary px-5 text-primary-foreground hover:bg-primary/90"
               >
                 {submitting && <Spinner />}
-                {submitting ? "Saving..." : "Save changes"}
+                {uploading ? "Uploading cover..." : submitting ? "Saving..." : "Save changes"}
               </Button>
             </div>
-
+            </fieldset>
           </form>
         )}
       </DialogContent>

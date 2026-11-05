@@ -19,7 +19,7 @@ const NewArrivals = () => {
 
     const loadBooks = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         const response = await fetch(`${apiUrl}/new-arrivals`, { cache: "no-store" });
         if (!active) return;
         if (!response.ok) {

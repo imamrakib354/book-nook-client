@@ -7,13 +7,13 @@ import type { IBook } from "@/lib/types/IBook";
 import { getCurrentUser } from "@/lib/get-current-user";
 import { getTokenFromServer } from "@/lib/getTokenFromServer";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 type BookPageProps = { params: Promise<{ id: string }> };
 
 const BookContent = async ({ params }: BookPageProps) => {
   const user = await getCurrentUser();
   if (!user) return null;
   const { id } = await params;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const token = await getTokenFromServer();
   const response = await fetch(`${apiUrl}/books/${encodeURIComponent(id)}`, {
     headers: { authorization: `Bearer ${token}` },

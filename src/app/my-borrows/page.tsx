@@ -13,7 +13,7 @@ async function AuthenticatedBorrows() {
   let loadError = false;
 
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const token = await getTokenFromServer();
     const response = await fetch(`${apiUrl}/borrows`, {
       headers: { authorization: `Bearer ${token}` },
@@ -33,7 +33,6 @@ async function AuthenticatedBorrows() {
         const book = await bookResponse.json();
         return { ...borrow, author: book?.author };
       } catch {
-        // Keep the borrow and Return Book action available if book details cannot be loaded.
         return borrow;
       }
     }));

@@ -8,7 +8,6 @@ import { getTokenFromServer } from "@/lib/getTokenFromServer";
 import type { IBook } from "@/lib/types/IBook";
 import type { IBorrow } from "@/lib/types/IBorrow";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 async function AuthenticatedProfile() {
   const user = await getCurrentUser();
@@ -19,6 +18,7 @@ async function AuthenticatedProfile() {
   let borrowLoadError = false;
 
   try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const token = await getTokenFromServer();
     const response = await fetch(`${apiUrl}/books?mine=true`, {
       headers: { authorization: `Bearer ${token}` },
@@ -32,6 +32,7 @@ async function AuthenticatedProfile() {
   }
 
   try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const token = await getTokenFromServer();
     const response = await fetch(`${apiUrl}/borrows`, {
       headers: { authorization: `Bearer ${token}` },

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useRef, useState, type FormEvent } from "react";
 import { Eye, Upload } from "lucide-react";
 import { toast } from "react-toastify";
@@ -19,6 +20,7 @@ const inputClass = "h-11 border-border bg-field px-3 text-foreground placeholder
 const labelClass = "mb-2 text-xs font-normal text-muted-foreground";
 
 const AddBookForm = ({ name, email }: { name: string; email: string }) => {
+  const router = useRouter();
   const [coverMethod, setCoverMethod] = useState<"upload" | "url">("upload");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState("");
@@ -113,6 +115,9 @@ const AddBookForm = ({ name, email }: { name: string; email: string }) => {
       setImageUrl("");
       setPreviewUrl("");
       setCoverLoaded(false);
+      setCoverMethod("upload");
+      router.push("/my-books");
+      router.refresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to add book.");
     } finally {

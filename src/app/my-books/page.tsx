@@ -8,7 +8,6 @@ import type { IBook } from "@/lib/types/IBook";
 import { getCurrentUser } from "@/lib/get-current-user";
 import { getTokenFromServer } from "@/lib/getTokenFromServer";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 const EmptyBooks = () => (
   <div className="mt-10 rounded-2xl border border-border bg-card px-6 py-12 text-center sm:py-16">
@@ -30,6 +29,7 @@ const MyBooksContent = async () => {
   let loadError = false;
 
   try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const token = await getTokenFromServer();
     const response = await fetch(`${apiUrl}/books?mine=true`, {
       headers: { authorization: `Bearer ${token}` },

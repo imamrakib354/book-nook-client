@@ -5,13 +5,13 @@ import type { IBook } from "@/lib/types/IBook";
 import { getTokenFromServer } from "@/lib/getTokenFromServer";
 import BorrowBook from "@/components/My-Borrows-Page/borrowBook";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 const BookDetailsPage = async ({ book, user }: { book: IBook; user: { name: string; email: string } }) => {
   let suggestions: IBook[] = [];
   let suggestionsFailed = false;
 
   try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const token = await getTokenFromServer();
     const response = await fetch(
       `${apiUrl}/books?category=${encodeURIComponent(book.category)}`,

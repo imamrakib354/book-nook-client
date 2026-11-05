@@ -5,10 +5,10 @@ import { BooksGridSkeleton } from "@/components/loading-skeletons";
 import type { IBook } from "@/lib/types/IBook";
 
 const Books = async () => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
   let books: IBook[];
 
   try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const response = await fetch(`${apiUrl}/books`, { cache: "no-store" });
     if (!response.ok) throw new Error("Unable to load books.");
     books = (await response.json()) as IBook[];

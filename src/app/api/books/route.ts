@@ -34,7 +34,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const token = await getTokenFromServer();
     const response = await fetch(`${apiUrl}/books`, {
       method: "POST",

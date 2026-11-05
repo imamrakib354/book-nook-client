@@ -18,7 +18,7 @@ const BorrowBook = ({ book, user }: { book: IBook; user: { name: string; email: 
   const [submitting, setSubmitting] = useState(false);
 
   const checkBorrowed = async () => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const token = await getTokenFromClient();
     const response = await fetch(`${apiUrl}/borrows`, {
       headers: { authorization: `Bearer ${token}` },
@@ -42,7 +42,7 @@ const BorrowBook = ({ book, user }: { book: IBook; user: { name: string; email: 
         toast.error("You have already borrowed this book. Return it before borrowing it again.");
         return;
       }
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const token = await getTokenFromClient();
       const response = await fetch(`${apiUrl}/borrows`, {
         method: "POST",
@@ -61,8 +61,8 @@ const BorrowBook = ({ book, user }: { book: IBook; user: { name: string; email: 
       setOpen(false);
       router.push("/my-borrows");
       router.refresh();
-    } catch {
-      toast.error("Unable to borrow book. Please try again.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to borrow book. Please try again.");
     } finally {
       setSubmitting(false);
     }

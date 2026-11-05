@@ -6,6 +6,7 @@ export const getTokenFromServer = async () => {
     headers: await headers(),
   });
   const token = jwtToken?.token;
+  if (!token) throw new Error("Your session could not be verified. Please sign in again.");
 
   return token;
 };
