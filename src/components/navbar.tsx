@@ -3,6 +3,7 @@ import Link from "next/link";
 import bookNookLogo from "../../public/images/BookNook-Logo.png";
 import ModeToggle from "@/components/mode-toggle";
 import NavLinks from "@/components/nav-links";
+import { UserRound } from "lucide-react";
 
 import { getCurrentUser } from "@/lib/get-current-user";
 import ProfileDropdown from "@/components/profilePage/profile-dropdown";
@@ -22,25 +23,25 @@ const Navbar = async () => {
   const user = await getCurrentUser();
   const navigation = user ? [...publicNavigation, ...privateNavigation] : publicNavigation;
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-card px-5 text-foreground shadow-sm sm:px-8 lg:px-10">
-      <div className="site-container flex flex-wrap items-center justify-between gap-x-3 py-3 lg:flex-nowrap lg:gap-8">
-        <Link href="/" aria-label="BookNook home" className="shrink-0 rounded-xl border border-[#bda052]/40 bg-[#123d32] px-2 py-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+    <header className="sticky top-0 z-50 border-b border-border bg-card px-3 text-foreground shadow-sm sm:px-6 lg:px-10">
+      <div className="site-container grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 py-3 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-5">
+        <Link href="/" aria-label="BookNook home" className="col-start-2 row-start-1 min-w-0 justify-self-center rounded-xl border border-[#bda052]/40 bg-[#123d32] px-2 py-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary lg:col-start-1 lg:justify-self-start">
           <Image
             src={bookNookLogo}
             alt="BookNook"
             priority
-            sizes="(max-width: 640px) 112px, 176px"
-            className="h-auto w-28 object-contain sm:w-44"
+            sizes="(max-width: 639px) 112px, (max-width: 1023px) 144px, 176px"
+            className="h-auto w-28 max-w-full object-contain sm:w-36 lg:w-44"
           />
         </Link>
 
-        <NavLinks navigation={navigation} />
-
-        <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2 lg:ml-0">
+        <div className="col-start-3 row-start-1 flex shrink-0 items-center justify-self-end gap-0 sm:gap-1 lg:gap-2">
           {user ? (
             <ProfileDropdown name={user.name} email={user.email} image={user.image} />
           ) : (
-            <div className="flex shrink-0 items-center gap-2 text-xs sm:text-sm">
+            <>
+            <Link href="/sign-in" aria-label="Sign in" className="flex size-9 items-center justify-center rounded-lg text-primary hover:bg-muted lg:hidden"><UserRound aria-hidden="true" className="size-5" /></Link>
+            <div className="hidden shrink-0 items-center gap-2 text-sm lg:flex">
               <Link href="/sign-in" className="inline-flex h-9 items-center justify-center rounded-md bg-muted px-3 text-foreground transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:px-4">
                 Log in
               </Link>
@@ -48,9 +49,11 @@ const Navbar = async () => {
                 Sign up
               </Link>
             </div>
+            </>
           )}
           <ModeToggle />
         </div>
+        <NavLinks navigation={navigation} showAccountLinks={!user} />
       </div>
     </header>
   );

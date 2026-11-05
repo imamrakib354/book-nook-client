@@ -36,9 +36,9 @@ const Banner = () => {
   const [swiper, setSwiper] = useState<SwiperInstance | null>(null);
 
   return (
-    <section aria-label="BookNook featured books" className="bg-background px-5 py-8 sm:px-8 sm:py-12 lg:px-10">
-      <div className="site-container relative">
-        <Suspense fallback={<div className="h-[380px] rounded-2xl bg-[#07352d]" />}>
+    <section aria-label="BookNook featured books" className="bg-background px-4 py-6 sm:px-8 sm:py-10 lg:px-10">
+      <div className="site-container relative min-w-0">
+        <Suspense fallback={<div className="h-[28rem] rounded-2xl bg-[#07352d] sm:h-[26rem] lg:h-[27rem]" />}>
           <Swiper
             modules={[Autoplay]}
             loop
@@ -46,11 +46,11 @@ const Banner = () => {
             speed={1000}
             autoplay={{ delay: 6000, disableOnInteraction: false }}
             onSwiper={setSwiper}
-            className="overflow-hidden rounded-2xl"
+            className="h-[28rem] w-full min-w-0 overflow-hidden rounded-2xl sm:h-[26rem] lg:h-[27rem]"
           >
             {slides.map((slide, index) => (
               <SwiperSlide key={slide.image}>
-                <div className="relative flex min-h-[380px] items-center overflow-hidden bg-[#07352d]">
+                <div className="relative flex h-full min-w-0 items-center overflow-hidden bg-[#07352d]">
                   <Image
                     src={slide.image}
                     alt=""
@@ -59,20 +59,20 @@ const Banner = () => {
                     sizes="(max-width: 640px) 100vw, 1280px"
                     className="object-cover object-[55%_center] sm:object-left"
                   />
-                  <div className="absolute inset-0 bg-[#032c26]/40 sm:bg-transparent" />
-                  <div className="relative mx-auto max-w-lg px-16 py-12 text-center sm:mr-0 sm:ml-auto sm:w-[55%] sm:max-w-none sm:px-8 sm:text-left lg:px-12">
-                    <p className="text-xs font-medium tracking-[0.14em] text-[#e5c58f]">
+                  <div className="absolute inset-0 bg-[#032c26]/75 sm:bg-[#032c26]/20" />
+                  <div className="relative mx-auto flex w-full max-w-lg flex-col items-center px-6 pt-8 pb-24 text-center sm:mr-0 sm:ml-auto sm:w-[60%] sm:max-w-none sm:items-start sm:px-12 sm:py-8 sm:text-left lg:px-14">
+                    <p className="flex min-h-8 items-center text-[10px] font-medium tracking-[0.14em] text-[#e5c58f] sm:text-xs">
                       {slide.label}
                     </p>
-                    <h1 className="mt-5 font-[family-name:var(--font-dm-serif)] text-4xl leading-tight text-[#fffaf1] lg:text-5xl">
+                    <h1 className="mt-3 flex min-h-[3.6em] items-center font-[family-name:var(--font-dm-serif)] text-[clamp(1.75rem,7vw,2.5rem)] leading-[1.2] text-[#fffaf1] sm:min-h-0 sm:text-3xl lg:text-5xl">
                       {slide.title}
                     </h1>
-                    <p className="mt-4 text-sm leading-relaxed text-[#e0ebe5] sm:text-base">
+                    <p className="mt-4 flex min-h-[4.5em] items-center text-sm leading-relaxed text-[#e0ebe5] sm:min-h-0 sm:text-base">
                       {slide.description}
                     </p>
                     <Link
                       href="/all-books"
-                      className="mt-7 inline-flex h-11 items-center justify-center rounded-lg bg-[#a9e9cd] px-6 text-sm font-medium text-[#102625] transition-colors hover:bg-[#c4f4dc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd]"
+                      className="mt-5 inline-flex h-11 shrink-0 items-center justify-center rounded-lg bg-[#a9e9cd] px-6 text-sm font-medium text-[#102625] transition-colors hover:bg-[#c4f4dc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd]"
                     >
                       Browse Books
                     </Link>
@@ -89,7 +89,7 @@ const Banner = () => {
           aria-label="Previous slide"
           disabled={!swiper}
           onClick={() => swiper?.slidePrev()}
-          className="absolute inset-y-0 left-3 z-10 my-auto size-11 rounded-full border-[#a9e9cd]/60 bg-[#06251f]/60 text-white hover:bg-[#18453a] hover:text-white sm:left-5"
+          className="absolute bottom-5 left-[calc(50%-3.25rem)] z-10 size-11 rounded-full border-[#a9e9cd]/60 bg-[#06251f]/60 text-white hover:bg-[#18453a] hover:text-white sm:inset-y-0 sm:left-3 sm:my-auto lg:left-5"
         >
           <ChevronLeft className="size-5" />
         </Button>
@@ -100,7 +100,7 @@ const Banner = () => {
           aria-label="Next slide"
           disabled={!swiper}
           onClick={() => swiper?.slideNext()}
-          className="absolute inset-y-0 right-3 z-10 my-auto size-11 rounded-full border-[#a9e9cd]/60 bg-[#06251f]/60 text-white hover:bg-[#18453a] hover:text-white sm:right-5"
+          className="absolute right-[calc(50%-3.25rem)] bottom-5 z-10 size-11 rounded-full border-[#a9e9cd]/60 bg-[#06251f]/60 text-white hover:bg-[#18453a] hover:text-white sm:inset-y-0 sm:right-3 sm:my-auto lg:right-5"
         >
           <ChevronRight className="size-5" />
         </Button>

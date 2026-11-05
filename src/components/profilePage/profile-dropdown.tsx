@@ -43,14 +43,14 @@ export default function ProfileDropdown({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-muted">
+      <DropdownMenuTrigger aria-label="Open profile menu" className="flex items-center rounded-lg p-0.5 hover:bg-muted lg:gap-2 lg:px-2 lg:py-1">
         <ProfileAvatar name={name} image={image} />
 
-        <span className="hidden max-w-28 truncate text-sm font-medium text-foreground sm:inline">
+        <span className="hidden max-w-28 truncate text-sm font-medium text-foreground lg:inline">
           {name}
         </span>
 
-        <ChevronDown className="size-4 text-primary" />
+        <ChevronDown aria-hidden="true" className="hidden size-4 text-primary lg:block" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent

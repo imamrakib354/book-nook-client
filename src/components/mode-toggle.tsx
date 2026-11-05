@@ -16,7 +16,7 @@ export default function ModeToggle() {
       onClick={() =>
         setTheme(resolvedTheme === "dark" ? "light" : "dark")
       }
-      className="size-10 shrink-0 text-primary hover:bg-muted focus-visible:ring-primary"
+      className="size-9 shrink-0 text-primary hover:bg-muted focus-visible:ring-primary sm:size-10"
     >
       <Sun className="hidden size-5 dark:block" />
       <Moon className="size-5 dark:hidden" />
