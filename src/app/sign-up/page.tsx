@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { toast } from "react-toastify";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,8 +13,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth-client";
 import ProfilePhotoInput, { type ProfilePhotoInputHandle } from "@/components/profile-photo-input";
 
-const inputClass = "h-11 border-0 bg-[#223638] px-3 text-white placeholder:text-[#91a4a4] focus-visible:border-[#a9e9cd] focus-visible:ring-[#a9e9cd]/30";
-const labelClass = "mb-2 text-xs font-normal text-[#b7c6c5]";
+const inputClass = "h-11 border-border bg-field px-3 text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/30";
+const labelClass = "mb-2 text-xs font-normal text-muted-foreground";
 
 const SignUpPage = () => {
   const router = useRouter();
@@ -22,7 +23,7 @@ const SignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [socialProvider, setSocialProvider] = useState<"google" | "github" | null>(null);
-  const [formError, setFormError] = useState("");
+  const [passwordError, setPasswordError] = useState(false);
   const isBusy = isSubmitting || socialProvider !== null;
 
   useEffect(() => {
@@ -48,12 +49,12 @@ const SignUpPage = () => {
     const email = String(formData.get("email") ?? "").trim();
     const password = String(formData.get("password") ?? "");
 
-    if (password.length < 6 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9\s]/.test(password)) {
-      setFormError("Use at least 6 characters, including an uppercase letter, a lowercase letter, a number, and a special character.");
+    if (password.length < 6 || !/[A-Z]/.test(password) || !/[a-z]/.test(password)) {
+      setPasswordError(true);
       return;
     }
 
-    setFormError("");
+    setPasswordError(false);
     setIsSubmitting(true);
 
     try {
@@ -61,20 +62,21 @@ const SignUpPage = () => {
       const { data, error } = await authClient.signUp.email({ name, email, password, image: image || undefined });
 
       if (error) {
-        setFormError(error.message || "Could not create your account. Please try again.");
+        toast.error(error.message || "Could not create your account.");
         return;
       }
 
       if (data) {
+        toast.success("Account created successfully! Please sign in.");
         form.reset();
         setShowPassword(false);
         router.replace("/sign-in");
         router.refresh();
       } else {
-        setFormError("Could not create your account. Please try again.");
+        toast.error("Could not create your account.");
       }
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : "Unable to reach the sign-up service. Please try again.");
+      toast.error(error instanceof Error ? error.message : "Unable to reach the sign-up service.");
     } finally {
       setIsSubmitting(false);
     }
@@ -83,7 +85,6 @@ const SignUpPage = () => {
   const handleSocialLogin = async (provider: "google" | "github") => {
     if (isBusy) return;
 
-    setFormError("");
     setSocialProvider(provider);
 
     try {
@@ -93,18 +94,18 @@ const SignUpPage = () => {
       const { error } = await authClient.signIn.social({ provider, callbackURL });
 
       if (error) {
-        setFormError(error.message || "Could not start social sign-up. Please try again.");
+        toast.error(error.message || "Could not start social sign-up.");
         setSocialProvider(null);
       }
     } catch {
-      setFormError("Unable to reach the sign-up service. Please try again.");
+      toast.error("Unable to reach the sign-up service.");
       setSocialProvider(null);
     }
   };
 
   return (
-    <main className="flex-1 bg-[#0b191a] px-5 py-10 text-white sm:px-8 sm:py-14 lg:px-10">
-      <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-2 md:gap-14 lg:gap-20">
+    <main className="flex-1 bg-background px-5 py-10 text-foreground sm:px-8 sm:py-14 lg:px-10">
+      <div className="site-container grid gap-10 md:grid-cols-2 md:gap-14 lg:gap-20">
         <section className="flex min-h-[520px] flex-col overflow-hidden rounded-2xl bg-[#214c46] p-7 sm:p-9 md:min-h-[620px]">
           <h2 className="font-[family-name:var(--font-dm-serif)] text-4xl leading-tight text-[#fffaf1] sm:text-5xl">
             Turn the page.<br />Join the story.
@@ -123,7 +124,7 @@ const SignUpPage = () => {
         </section>
 
         <section className="flex flex-col justify-center py-3 md:py-10">
-          <h1 className="font-[family-name:var(--font-dm-serif)] text-3xl text-[#fffaf1] sm:text-4xl">
+          <h1 className="font-[family-name:var(--font-dm-serif)] text-3xl text-foreground sm:text-4xl">
             Create your account
           </h1>
 
@@ -150,6 +151,12 @@ const SignUpPage = () => {
                   type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
                   minLength={6}
+                  pattern="(?=.*[a-z])(?=.*[A-Z]).{6,}"
+                  title="Use at least 6 characters, including an uppercase and a lowercase letter."
+                  aria-describedby="password-help"
+                  aria-invalid={passwordError}
+                  onInvalid={() => setPasswordError(true)}
+                  onChange={() => setPasswordError(false)}
                   required
                   placeholder="Create a password"
                   className={`${inputClass} pr-11`}
@@ -159,37 +166,35 @@ const SignUpPage = () => {
                   onClick={() => setShowPassword((visible) => !visible)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                   aria-pressed={showPassword}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded text-[#b7c6c5] hover:text-[#a9e9cd] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded text-muted-foreground hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   {showPassword ? <EyeOff aria-hidden="true" className="size-5" /> : <Eye aria-hidden="true" className="size-5" />}
                 </button>
               </div>
 
-              <p className="mt-2 text-xs text-[#9badae]">At least 6 characters with uppercase, lowercase, a number, and a special character.</p>
+              <p id="password-help" className={`mt-2 text-xs ${passwordError ? "text-red-700 dark:text-[#f3b7a8]" : "text-muted-foreground"}`}>Use at least 6 characters, including an uppercase and a lowercase letter.</p>
             </div>
 
-            {formError && <p role="alert" className="text-sm text-[#f3b7a8]">{formError}</p>}
-
-            <button type="submit" disabled={isBusy} aria-busy={isSubmitting} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#a9e9cd] text-sm font-medium text-[#102625] hover:bg-[#c4f4dc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd] disabled:cursor-not-allowed disabled:opacity-60">
+            <button type="submit" disabled={isBusy} aria-busy={isSubmitting} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60">
               {isSubmitting && <Spinner />}
               {isSubmitting ? "Creating account..." : "Create account"}
             </button>
           </form>
 
-          <p className="mt-5 text-center text-sm text-[#a7b8b8]">
-            Already a member? <Link href="/sign-in" className="text-[#a9e9cd] hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-[#a9e9cd]">Sign in</Link>
+          <p className="mt-5 text-center text-sm text-muted-foreground">
+            Already a member? <Link href="/sign-in" className="text-primary hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-primary">Sign in</Link>
           </p>
 
-          <div className="my-7 flex items-center gap-4 text-xs text-[#9badae]">
-            <span className="h-px flex-1 bg-[#294344]" />or<span className="h-px flex-1 bg-[#294344]" />
+          <div className="my-7 flex items-center gap-4 text-xs text-muted-foreground">
+            <span className="h-px flex-1 bg-border" />or<span className="h-px flex-1 bg-border" />
           </div>
 
           <div className="space-y-3">
-            <button type="button" onClick={() => handleSocialLogin("google")} disabled={isBusy} aria-busy={socialProvider === "google"} className="flex h-11 w-full items-center justify-center gap-3 rounded-lg bg-[#223638] text-sm text-[#d2dddb] disabled:cursor-not-allowed disabled:opacity-60">
+            <button type="button" onClick={() => handleSocialLogin("google")} disabled={isBusy} aria-busy={socialProvider === "google"} className="flex h-11 w-full items-center justify-center gap-3 rounded-lg bg-muted text-sm text-foreground disabled:cursor-not-allowed disabled:opacity-60">
               {socialProvider === "google" && <Spinner />}
               <span aria-hidden="true" className="text-base font-semibold">G</span> Continue with Google
             </button>
-            <button type="button" onClick={() => handleSocialLogin("github")} disabled={isBusy} aria-busy={socialProvider === "github"} className="flex h-11 w-full items-center justify-center gap-3 rounded-lg bg-[#223638] text-sm text-[#d2dddb] disabled:cursor-not-allowed disabled:opacity-60">
+            <button type="button" onClick={() => handleSocialLogin("github")} disabled={isBusy} aria-busy={socialProvider === "github"} className="flex h-11 w-full items-center justify-center gap-3 rounded-lg bg-muted text-sm text-foreground disabled:cursor-not-allowed disabled:opacity-60">
               {socialProvider === "github" && <Spinner />}
               <span aria-hidden="true" className="text-xs font-bold tracking-tight">GH</span> Continue with GitHub
             </button>

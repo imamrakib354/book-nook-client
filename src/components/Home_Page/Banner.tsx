@@ -9,7 +9,7 @@ import { Autoplay } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 
 const slides = [
   {
@@ -36,8 +36,8 @@ const Banner = () => {
   const [swiper, setSwiper] = useState<SwiperInstance | null>(null);
 
   return (
-    <section aria-label="BookNook featured books" className="bg-[#0b191a] px-5 py-8 sm:px-8 sm:py-12 lg:px-10">
-      <div className="relative mx-auto max-w-7xl">
+    <section aria-label="BookNook featured books" className="bg-background px-5 py-8 sm:px-8 sm:py-12 lg:px-10">
+      <div className="site-container relative">
         <Suspense fallback={<div className="h-[380px] rounded-2xl bg-[#07352d]" />}>
           <Swiper
             modules={[Autoplay]}
@@ -72,7 +72,7 @@ const Banner = () => {
                     </p>
                     <Link
                       href="/all-books"
-                      className={buttonVariants({ className: "mt-7 h-11 bg-[#a9e9cd] px-6 text-[#102625] hover:bg-[#c4f4dc]" })}
+                      className="mt-7 inline-flex h-11 items-center justify-center rounded-lg bg-[#a9e9cd] px-6 text-sm font-medium text-[#102625] transition-colors hover:bg-[#c4f4dc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9e9cd]"
                     >
                       Browse Books
                     </Link>

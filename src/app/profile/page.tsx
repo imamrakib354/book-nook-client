@@ -53,32 +53,32 @@ async function AuthenticatedProfile() {
   ];
 
   return (
-    <main className="flex-1 bg-[#0b191a] px-5 py-8 text-white sm:px-8 lg:px-10">
+    <main className="flex-1 bg-background px-5 py-8 text-foreground sm:px-8 lg:px-10">
       
-      <div className="mx-auto max-w-6xl">
-        <h1 className="font-[family-name:var(--font-dm-serif)] text-3xl text-[#fffaf1] sm:text-4xl">Your reader profile</h1>
-        <p className="mt-1 text-sm text-[#a7b8b8]">A space for your books, your borrowing history and account details.</p>
-        <section aria-label="Reader profile" className="mt-8 rounded-xl bg-[#172b2c] p-6 sm:p-8">
+      <div className="site-container">
+        <h1 className="font-[family-name:var(--font-dm-serif)] text-3xl text-foreground sm:text-4xl">Your reader profile</h1>
+        <p className="mt-1 text-sm text-muted-foreground">A space for your books, your borrowing history and account details.</p>
+        <section aria-label="Reader profile" className="surface-panel mt-8 rounded-xl p-6 sm:p-8">
           
           <div className="flex items-center gap-5 sm:gap-6">
             <ProfileAvatar name={user.name} image={user.image} size={80} />
             <div className="min-w-0">
-              <h2 className="font-[family-name:var(--font-dm-serif)] text-2xl text-[#fffaf1]">{user.name}</h2>
-              <p className="mt-1 text-sm text-[#a7b8b8]">Community book contributor</p>
-              <p className="mt-1 text-xs text-[#eac58c]">Member since {memberSince}</p>
+              <h2 className="font-[family-name:var(--font-dm-serif)] text-2xl text-foreground">{user.name}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Community book contributor</p>
+              <p className="mt-1 text-xs text-gold">Member since {memberSince}</p>
             </div>
           </div>
 
           <div aria-label="Your book statistics" className="mt-8 grid gap-4 sm:grid-cols-3 sm:gap-5">
             {stats.map(({ label, value }) => (
-              <div key={label} className="flex min-h-20 flex-col justify-center rounded-lg bg-[#223638] px-5 py-4">
-                <span className="font-[family-name:var(--font-dm-serif)] text-2xl text-[#a9e9cd]">{value}</span>
-                <span className="text-xs text-[#9badae]">{label}</span>
+              <div key={label} className="flex min-h-20 flex-col justify-center rounded-lg bg-muted px-5 py-4">
+                <span className="font-[family-name:var(--font-dm-serif)] text-2xl text-primary">{value}</span>
+                <span className="text-xs text-muted-foreground">{label}</span>
               </div>
             ))}
           </div>
 
-          {(loadError || borrowLoadError) && <p role="alert" className="mt-3 text-sm text-[#f3b7a8]">Unable to load some book statistics. Please try again later.</p>}
+          {(loadError || borrowLoadError) && <p role="alert" className="mt-3 text-sm text-destructive">Unable to load some book statistics. Please try again later.</p>}
           <ProfileDialogBox user={{ name: user.name, image: user.image }} />
         </section>
       </div>

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent, type MouseEvent } from "react";
 import { BookOpen, Eye } from "lucide-react";
+import { toast } from "react-toastify";
 
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -26,9 +27,9 @@ import type { IBook } from "@/lib/types/IBook";
 import { getTokenFromClient } from "@/lib/getTokenFromClient";
 
 const inputClass =
-  "h-10 border-0 bg-[#223638] px-3 text-white placeholder:text-[#91a4a4] focus-visible:ring-[#a9e9cd]/30";
+  "h-10 border-border bg-field px-3 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/30";
 
-const labelClass = "mb-2 text-xs font-normal text-[#b7c6c5]";
+const labelClass = "mb-2 text-xs font-normal text-muted-foreground";
 
 const EditBook = ({ book }: { book: IBook }) => {
   const router = useRouter();
@@ -51,6 +52,7 @@ const EditBook = ({ book }: { book: IBook }) => {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submitting) return;
 
     const formData = new FormData(event.currentTarget);
     formData.delete("title");
@@ -74,14 +76,15 @@ const EditBook = ({ book }: { book: IBook }) => {
       });
 
       const result = await response.json();
-      console.log("Update response:", result);
-
-      if (response.ok && result.matchedCount > 0) {
-        setOpen(false);
-        router.refresh();
+      if (!response.ok || !result.matchedCount) {
+        toast.error("Failed to update book.");
+        return;
       }
-    } catch (error) {
-      console.error("Book update failed:", error);
+      toast.success("Book updated successfully!");
+      setOpen(false);
+      router.refresh();
+    } catch {
+      toast.error("Failed to update book.");
     } finally {
       setSubmitting(false);
     }
@@ -95,24 +98,24 @@ const EditBook = ({ book }: { book: IBook }) => {
         if (value) setPreviewUrl(book.coverUrl || "");
       }}
     >
-      <DialogTrigger className="h-9 rounded-lg bg-[#223638] px-4 text-xs text-[#d2dddb] hover:bg-[#30484a]">
+      <DialogTrigger className="h-9 rounded-lg bg-muted px-4 text-xs text-foreground hover:bg-accent">
         Edit
       </DialogTrigger>
 
-      <DialogContent className="max-h-[90dvh] overflow-y-auto border border-[#294344] bg-[#172b2c] p-6 text-[#d9e3e0] sm:max-w-lg">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto border border-border bg-card p-6 text-foreground sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-[family-name:var(--font-dm-serif)] text-2xl font-normal text-[#fffaf1]">
+          <DialogTitle className="font-[family-name:var(--font-dm-serif)] text-2xl font-normal text-foreground">
             Edit book details
           </DialogTitle>
 
-          <DialogDescription className="text-[#9badae]">
+          <DialogDescription className="text-muted-foreground">
             Update the information for your shared book.
           </DialogDescription>
         </DialogHeader>
 
         {open && (
           <form onSubmit={handleSubmit} className="mt-2 space-y-6">
-            <p id={`identity-note-${book._id}`} className="text-sm text-[#a7b8b8]">Title and author cannot be updated.</p>
+            <p id={`identity-note-${book._id}`} className="text-sm text-muted-foreground">Title and author cannot be updated.</p>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <Label
@@ -178,8 +181,8 @@ const EditBook = ({ book }: { book: IBook }) => {
                 </Button>
               </div>
 
-              <div className="mt-4 rounded-xl bg-[#223638] p-4">
-                <p className="mb-4 text-xs text-[#a7b8b8]">
+              <div className="mt-4 rounded-xl bg-muted p-4">
+                <p className="mb-4 text-xs text-muted-foreground">
                   COVER PREVIEW
                 </p>
 
@@ -196,7 +199,7 @@ const EditBook = ({ book }: { book: IBook }) => {
                       onError={() => setPreviewUrl("")}
                     />
                   ) : (
-                    <BookOpen className="size-10 text-[#a9e9cd]" />
+                    <BookOpen className="size-10 text-primary" />
                   )}
                 </div>
               </div>
@@ -216,7 +219,7 @@ const EditBook = ({ book }: { book: IBook }) => {
                   name="category"
                   defaultValue={book.category}
                   required
-                  className="w-full [&_select]:h-10 [&_select]:border-0 [&_select]:bg-[#223638] [&_select]:text-white"
+                  className="w-full [&_select]:h-10"
                 >
                   <NativeSelectOption value="Fiction">Fiction</NativeSelectOption>
                   <NativeSelectOption value="Science">Science</NativeSelectOption>
@@ -267,7 +270,7 @@ const EditBook = ({ book }: { book: IBook }) => {
               <Button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="h-10 bg-[#223638] px-5 text-[#d9e3e0] hover:bg-[#30484a]"
+                className="h-10 bg-muted px-5 text-foreground hover:bg-accent"
               >
                 Cancel
               </Button>

@@ -1,3 +1,106 @@
-@import "@heroui/styles/css";
+@import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--card);
+  --color-popover-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--muted);
+  --color-secondary-foreground: var(--foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--foreground);
+  --color-border: var(--border);
+  --color-input: var(--border);
+  --color-ring: var(--primary);
+  --color-chrome: var(--chrome);
+  --color-gold: var(--gold);
+  --color-destructive: var(--destructive);
+  --color-field: var(--field);
+}
+
+:root {
+  color-scheme: light;
+  --background: #f4f7f3;
+  --foreground: #102625;
+  --card: #ffffff;
+  --muted: #e8efe9;
+  --muted-foreground: #4e655b;
+  --primary: #276855;
+  --primary-foreground: #ffffff;
+  --accent: #d8e9df;
+  --border: #c4d3c8;
+  --chrome: #eaf1e9;
+  --field: #ffffff;
+  --destructive: #b42332;
+  --gold: #89641f;
+  --radius: 0.625rem;
+  --toastify-color-progress-dark: #276855;
+  --toastify-color-light: var(--card);
+  --toastify-color-dark: var(--card);
+  --toastify-text-color-light: var(--foreground);
+  --toastify-text-color-dark: var(--foreground);
+}
+
+:root.dark {
+  color-scheme: dark;
+  --background: #0b191a;
+  --foreground: #fffaf1;
+  --card: #172b2c;
+  --muted: #223638;
+  --muted-foreground: #a7b8b8;
+  --primary: #a9e9cd;
+  --primary-foreground: #102625;
+  --accent: #203637;
+  --border: #294344;
+  --chrome: #0e1d1e;
+  --gold: #eac58c;
+  --field: #223638;
+  --destructive: #f3b7a8;
+  --toastify-color-progress-dark: #a9e9cd;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--foreground);
+  }
+}
+
+/* Shared surfaces keep dashboard panels and filters distinct in both themes. */
+@utility surface-panel {
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: 0 3px 16px rgb(16 38 37 / 0.04);
+}
+
+@utility filter-bar {
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--card);
+  padding: 1.25rem;
+  box-shadow: 0 3px 16px rgb(16 38 37 / 0.04);
+}
+
+@utility site-container {
+  width: 100%;
+  max-width: 80rem;
+  margin-inline: auto;
+}

@@ -2,7 +2,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function Block({ className = "" }: ComponentProps<"div">) {
-  return <Skeleton className={`bg-[#294344] motion-reduce:animate-none ${className}`} />;
+  return <Skeleton className={`bg-muted motion-reduce:animate-none ${className}`} />;
 }
 
 function LoadingContent({ children, label }: { children: ReactNode; label: string }) {
@@ -23,7 +23,7 @@ export function BooksGridSkeleton() {
       <Block className="mt-10 h-4 w-32" />
       <div className="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }, (_, index) => (
-          <div key={index} className="rounded-xl bg-[#172b2c] p-3">
+          <div key={index} className="rounded-xl bg-card p-3">
             <Block className="h-64 rounded-lg" />
             <Block className="mt-4 h-3 w-28" />
             <Block className="mt-3 h-6 w-4/5" />
@@ -40,7 +40,7 @@ function StatsSkeleton() {
   return (
     <div className="mt-8 grid gap-4 sm:grid-cols-3">
       {Array.from({ length: 3 }, (_, index) => (
-        <div key={index} className="rounded-xl bg-[#172b2c] p-6">
+        <div key={index} className="rounded-xl bg-card p-6">
           <Block className="h-8 w-12" /><Block className="mt-3 h-4 w-28" />
         </div>
       ))}
@@ -50,7 +50,7 @@ function StatsSkeleton() {
 
 function BookRowsSkeleton() {
   return (
-    <div className="mt-10 divide-y divide-white/5 rounded-xl bg-[#172b2c] px-5 sm:px-7">
+    <div className="mt-10 divide-y divide-border rounded-xl bg-card px-5 sm:px-7">
       {Array.from({ length: 3 }, (_, index) => (
         <div key={index} className="grid grid-cols-2 items-center gap-4 py-5 md:grid-cols-[5rem_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_9rem] md:gap-6">
           <Block className="h-24 w-16" /><Block className="h-5 w-4/5" />
@@ -76,8 +76,8 @@ type PageVariant = "page" | "details" | "borrows" | "profile" | "form";
 
 export function PageSkeleton({ variant = "page" }: { variant?: PageVariant }) {
   return (
-    <main className="flex-1 bg-[#0b191a] px-5 py-12 sm:px-8 sm:py-16 lg:px-10">
-      <div className={`mx-auto ${variant === "form" ? "max-w-3xl" : "max-w-6xl"}`}>
+    <main className="flex-1 bg-background px-5 py-12 sm:px-8 sm:py-16 lg:px-10">
+      <div className={variant === "form" ? "mx-auto max-w-3xl" : "site-container"}>
         <LoadingContent label="Loading page...">
           <Block className="h-9 w-2/3 max-w-80" />
           <Block className="mt-3 h-4 w-3/4 max-w-md" />
@@ -99,7 +99,7 @@ export function PageSkeleton({ variant = "page" }: { variant?: PageVariant }) {
               <BookRowsSkeleton />
             </>
           ) : variant === "profile" ? (
-            <div className="mt-8 rounded-xl bg-[#172b2c] p-6 sm:p-8">
+            <div className="mt-8 rounded-xl bg-card p-6 sm:p-8">
               <div className="flex items-center gap-5">
                 <Block className="size-20 shrink-0 rounded-full" />
                 <div className="flex-1"><Block className="h-6 w-1/2" /><Block className="mt-3 h-4 w-2/3" /></div>
@@ -107,7 +107,7 @@ export function PageSkeleton({ variant = "page" }: { variant?: PageVariant }) {
               <StatsSkeleton /><Block className="mt-9 h-9 w-28" />
             </div>
           ) : variant === "form" ? (
-            <div className="mt-8 space-y-8 rounded-2xl bg-[#172b2c] p-6 sm:p-10">
+            <div className="mt-8 space-y-8 rounded-2xl bg-card p-6 sm:p-10">
               <div className="grid gap-6 sm:grid-cols-2">
                 {Array.from({ length: 6 }, (_, index) => <Block key={index} className="h-16" />)}
               </div>

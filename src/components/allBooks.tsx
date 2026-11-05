@@ -1,19 +1,37 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import BookCard from "@/components/bookCard";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import type { IBook } from "@/lib/types/IBook";
 
-const labelClass = "mb-2 text-xs font-normal text-[#b7c6c5]";
-const selectClass = "w-full [&_select]:h-11 [&_select]:border-0 [&_select]:bg-[#223638] [&_select]:px-3 [&_select]:text-white [&_svg]:text-[#b7c6c5] [&_option]:bg-[#223638] [&_option]:text-white";
+const labelClass = "mb-2 text-xs font-normal text-muted-foreground";
+const selectClass = "w-full [&_select]:h-11 [&_option]:bg-field [&_option]:text-foreground";
 
 const AllBooks = ({ books }: { books: IBook[] }) => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const requestedCategory = searchParams.get("category");
+  const category = ["Fiction", "Science", "History", "Kids", "Others"].find(
+    (value) => value.toLowerCase() === requestedCategory?.toLowerCase()
+  ) ?? "all";
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("all");
   const [sortBy, setSortBy] = useState("latest");
+
+  const setCategory = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value === "all") {
+      params.delete("category");
+    } else {
+      params.set("category", value);
+    }
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
 
   const searchTerm = search.trim().toLowerCase();
   const filteredBooks = books.filter((book) =>
@@ -40,10 +58,10 @@ const AllBooks = ({ books }: { books: IBook[] }) => {
 
   return (
     <>
-      <div className="mt-9 grid gap-5 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr]" role="group" aria-label="Browse controls">
+      <div className="filter-bar mt-9 grid gap-5 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr]" role="group" aria-label="Browse controls">
         <div>
           <Label htmlFor="book-search" className={labelClass}>Search</Label>
-          <Input id="book-search" type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search by title or author..." className="h-11 border-0 bg-[#223638] px-3 text-white placeholder:text-[#91a4a4] focus-visible:border-[#a9e9cd] focus-visible:ring-[#a9e9cd]/30" />
+          <Input id="book-search" type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search by title or author..." className="h-11 border-border bg-field px-3 text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/30" />
         </div>
         <div>
           <Label htmlFor="book-category" className={labelClass}>Category</Label>
@@ -66,9 +84,9 @@ const AllBooks = ({ books }: { books: IBook[] }) => {
         </div>
       </div>
       <section aria-label="Books" className="mt-10">
-        <p className="text-sm text-[#9badae]">Showing {sortedBooks.length} {sortedBooks.length === 1 ? "book" : "books"}</p>
+        <p className="text-sm text-muted-foreground">Showing {sortedBooks.length} {sortedBooks.length === 1 ? "book" : "books"}</p>
         {sortedBooks.length === 0 ? (
-          <p className="mt-6 rounded-xl bg-[#172b2c] p-8 text-center text-[#b7c6c5]">{books.length === 0 ? "No books have been added yet." : searchTerm ? "No books match your search in the selected category." : "No books found in this category."}</p>
+          <p className="mt-6 rounded-xl bg-card p-8 text-center text-muted-foreground">{books.length === 0 ? "No books have been added yet." : searchTerm ? "No books match your search in the selected category." : "No books found in this category."}</p>
         ) : (
           <div className="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {sortedBooks.map((book) => <BookCard key={book._id} book={book} />)}

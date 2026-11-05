@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRef, useState, type FormEvent } from "react";
 import { Eye, Upload } from "lucide-react";
+import { toast } from "react-toastify";
 
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -13,9 +14,9 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Textarea } from "@/components/ui/textarea";
 import { uploadImage } from "@/lib/upload-image";
 
-const inputClass = "h-11 border-0 bg-[#223638] px-3 text-white placeholder:text-[#91a4a4] focus-visible:border-[#a9e9cd] focus-visible:ring-[#a9e9cd]/30";
+const inputClass = "h-11 border-border bg-field px-3 text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/30";
 
-const labelClass = "mb-2 text-xs font-normal text-[#b7c6c5]";
+const labelClass = "mb-2 text-xs font-normal text-muted-foreground";
 
 const AddBookForm = ({ name, email }: { name: string; email: string }) => {
   const [coverMethod, setCoverMethod] = useState<"upload" | "url">("upload");
@@ -23,8 +24,6 @@ const AddBookForm = ({ name, email }: { name: string; email: string }) => {
   const [imageUrl, setImageUrl] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
   const [coverLoaded, setCoverLoaded] = useState(false);
-  const [coverError, setCoverError] = useState("");
-  const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -38,19 +37,17 @@ const AddBookForm = ({ name, email }: { name: string; email: string }) => {
     setImageUrl("");
     setPreviewUrl("");
     setCoverLoaded(false);
-    setCoverError("");
   };
 
   const selectImage = (file?: File) => {
     if (!file || submitting) return;
     imageReader.current?.abort();
-    setCoverError("");
     setImageFile(null);
     setPreviewUrl("");
     setCoverLoaded(false);
 
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024) {
-      setCoverError("Choose a JPG, PNG or WebP image no larger than 5 MB.");
+      toast.error("Choose a JPG, PNG or WebP image no larger than 5 MB.");
       return;
     }
 
@@ -60,13 +57,12 @@ const AddBookForm = ({ name, email }: { name: string; email: string }) => {
     reader.onload = () => setPreviewUrl(String(reader.result));
     reader.onerror = () => {
       setImageFile(null);
-      setCoverError("Could not read this image. Please choose it again.");
+      toast.error("Could not read this image. Please choose it again.");
     };
     reader.readAsDataURL(file);
   };
 
   const previewCover = () => {
-    setCoverError("");
 
     try {
       const url = new URL(imageUrl.trim());
@@ -79,16 +75,15 @@ const AddBookForm = ({ name, email }: { name: string; email: string }) => {
     } catch {
       setPreviewUrl("");
       setCoverLoaded(false);
-      setCoverError("Enter a valid http or https image URL.");
+      toast.error("Enter a valid http or https image URL.");
     }
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (submitting) return;
-    setSubmitError("");
     if (coverMethod === "upload" && !imageFile) {
-      setCoverError("Choose or drop a book cover image first.");
+      toast.error("Choose a book cover image first.");
       return;
     }
 
@@ -107,17 +102,19 @@ const AddBookForm = ({ name, email }: { name: string; email: string }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...book, coverUrl }),
       });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Unable to publish your book. Please try again.");
+      if (!response.ok) {
+        toast.error("Failed to add book.");
+        return;
+      }
+      toast.success("Book added successfully!");
       imageReader.current?.abort();
       form.reset();
       setImageFile(null);
       setImageUrl("");
       setPreviewUrl("");
       setCoverLoaded(false);
-      setCoverError("");
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "Unable to publish your book. Please try again.");
+      toast.error(error instanceof Error ? error.message : "Failed to add book.");
     } finally {
       setUploading(false);
       setSubmitting(false);
@@ -125,14 +122,14 @@ const AddBookForm = ({ name, email }: { name: string; email: string }) => {
   };
 
   return (
-    <main className="flex-1 bg-[#0b191a] px-5 py-12 text-white sm:px-8 sm:py-16 lg:px-10">
+    <main className="flex-1 bg-background px-5 py-12 text-foreground sm:px-8 sm:py-16 lg:px-10">
       <div className="mx-auto max-w-3xl">
-        <h1 className="font-[family-name:var(--font-dm-serif)] text-3xl text-[#fffaf1] sm:text-4xl">
+        <h1 className="font-[family-name:var(--font-dm-serif)] text-3xl text-foreground sm:text-4xl">
           Share a book with the community
         </h1>
-        <p className="mt-1 text-sm text-[#a7b8b8]">Someone is waiting for the story on your shelf.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Someone is waiting for the story on your shelf.</p>
 
-        <Card className="mt-8 gap-0 rounded-2xl bg-[#172b2c] p-6 text-white ring-0 sm:p-10">
+        <Card className="surface-panel mt-8 gap-0 rounded-2xl p-6 text-foreground ring-0 sm:p-10">
           <form onSubmit={handleSubmit} aria-busy={submitting}>
             <fieldset disabled={submitting} className="space-y-8">
             <div className="grid gap-6 sm:grid-cols-2">
@@ -149,7 +146,7 @@ const AddBookForm = ({ name, email }: { name: string; email: string }) => {
 
               <div>
                 <Label htmlFor="book-category" className={labelClass}>Category</Label>
-                <NativeSelect id="book-category" name="category" required className="w-full [&_select]:h-11 [&_select]:border-0 [&_select]:bg-[#223638] [&_select]:px-3 [&_select]:text-white [&_svg]:text-[#b7c6c5]">
+                <NativeSelect id="book-category" name="category" required className="w-full [&_select]:h-11">
                   <NativeSelectOption value="Fiction">Fiction</NativeSelectOption>
                   <NativeSelectOption value="Science">Science</NativeSelectOption>
                   <NativeSelectOption value="History">History</NativeSelectOption>
@@ -169,11 +166,11 @@ const AddBookForm = ({ name, email }: { name: string; email: string }) => {
               </div>
             </div>
 
-            <section aria-label="Book cover" className="rounded-xl border border-[#294344] p-5 sm:p-6">
-              <p className="mb-3 text-sm text-[#e0ebe5]">Choose how to add your book cover</p>
+            <section aria-label="Book cover" className="rounded-xl border border-border p-5 sm:p-6">
+              <p className="mb-3 text-sm text-foreground">Choose how to add your book cover</p>
               <div className="mb-5 flex flex-wrap gap-3">
-                <Button type="button" aria-pressed={coverMethod === "upload"} onClick={() => changeCoverMethod("upload")} className={`h-10 px-6 ${coverMethod === "upload" ? "bg-[#a9e9cd] text-[#102625] hover:bg-[#c4f4dc]" : "bg-[#223638] text-[#d9e3e0] hover:bg-[#30484a]"}`}>Upload file</Button>
-                <Button type="button" aria-pressed={coverMethod === "url"} onClick={() => changeCoverMethod("url")} className={`h-10 px-6 ${coverMethod === "url" ? "bg-[#a9e9cd] text-[#102625] hover:bg-[#c4f4dc]" : "bg-[#223638] text-[#d9e3e0] hover:bg-[#30484a]"}`}>Paste image URL</Button>
+                <Button type="button" aria-pressed={coverMethod === "upload"} onClick={() => changeCoverMethod("upload")} className={`h-10 px-6 ${coverMethod === "upload" ? "bg-[#a9e9cd] text-[#102625] hover:bg-[#c4f4dc]" : "bg-muted text-foreground hover:bg-accent"}`}>Upload file</Button>
+                <Button type="button" aria-pressed={coverMethod === "url"} onClick={() => changeCoverMethod("url")} className={`h-10 px-6 ${coverMethod === "url" ? "bg-[#a9e9cd] text-[#102625] hover:bg-[#c4f4dc]" : "bg-muted text-foreground hover:bg-accent"}`}>Paste image URL</Button>
               </div>
               <div className="grid items-start gap-5 sm:grid-cols-[minmax(0,1fr)_13rem]">
                 {coverMethod === "upload" ? (
@@ -185,65 +182,62 @@ const AddBookForm = ({ name, email }: { name: string; email: string }) => {
                       setIsDragging(false);
                       selectImage(event.dataTransfer.files[0]);
                     }}
-                    className={`rounded-xl border-2 border-dashed transition-colors focus-within:outline-2 focus-within:outline-offset-4 focus-within:outline-[#a9e9cd] ${isDragging ? "border-[#a9e9cd] bg-[#294b45]" : "border-[#365051] bg-[#223638] hover:border-[#a9e9cd]/60"}`}
+                    className={`rounded-xl border-2 border-dashed transition-colors focus-within:outline-2 focus-within:outline-offset-4 focus-within:outline-primary ${isDragging ? "border-primary bg-accent" : "border-border bg-muted hover:border-primary/60"}`}
                   >
-                    <input id="cover-file" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" aria-describedby={coverError ? "cover-error" : "cover-help"} aria-invalid={Boolean(coverError)} onChange={(event) => {
+                    <input id="cover-file" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" aria-describedby="cover-help" onChange={(event) => {
                       selectImage(event.target.files?.[0]);
                       event.target.value = "";
                     }} />
                     <label htmlFor="cover-file" className={`flex min-h-56 flex-col items-center justify-center gap-4 px-5 py-7 text-center ${submitting ? "cursor-wait" : "cursor-pointer"}`}>
-                      <Upload aria-hidden="true" className="size-8 text-[#a9e9cd]" />
-                      <span className="text-sm text-[#e0ebe5]">{isDragging ? "Drop your book cover here" : "Drop an image here, or browse files"}</span>
-                      <span className="text-xs text-[#9badae]">JPG, PNG or WebP · Maximum 5 MB</span>
-                      {imageFile && <span className="max-w-full break-all text-xs text-[#a9e9cd]">{imageFile.name}</span>}
+                      <Upload aria-hidden="true" className="size-8 text-primary" />
+                      <span className="text-sm text-foreground">{isDragging ? "Drop your book cover here" : "Drop an image here, or browse files"}</span>
+                      <span className="text-xs text-muted-foreground">JPG, PNG or WebP · Maximum 5 MB</span>
+                      {imageFile && <span className="max-w-full break-all text-xs text-primary">{imageFile.name}</span>}
                     </label>
                   </div>
                 ) : (
-                  <div className="min-h-56 rounded-xl bg-[#223638] p-5">
-                    <Label htmlFor="cover-url" className="mb-3 text-sm font-normal text-[#e0ebe5]">Paste your book cover image URL</Label>
+                  <div className="min-h-56 rounded-xl bg-muted p-5">
+                    <Label htmlFor="cover-url" className="mb-3 text-sm font-normal text-foreground">Paste your book cover image URL</Label>
                     <Input id="cover-url" name="coverUrl" type="url" required value={imageUrl} onChange={(event) => {
                       setImageUrl(event.target.value);
                       setPreviewUrl("");
                       setCoverLoaded(false);
-                      setCoverError("");
-                    }} placeholder="https://example.com/book-cover.jpg" aria-invalid={Boolean(coverError)} aria-describedby={coverError ? "cover-error" : "cover-help"} className="h-11 border-[#365051] bg-[#172b2c] px-3 text-white placeholder:text-[#91a4a4]" />
+                    }} placeholder="https://example.com/book-cover.jpg" aria-describedby="cover-help" className="h-11 border-border bg-card px-3 text-foreground placeholder:text-muted-foreground" />
                     <Button type="button" onClick={previewCover} className="mt-4 h-11 bg-[#a9e9cd] px-5 text-[#102625] hover:bg-[#c4f4dc]">
                       <Eye aria-hidden="true" className="size-4" /> Preview
                     </Button>
                   </div>
                 )}
                 <div>
-                  <div className="rounded-xl bg-[#223638] p-4">
-                    <p className="text-xs tracking-wide text-[#a7b8b8]">COVER PREVIEW</p>
+                  <div className="rounded-xl bg-muted p-4">
+                    <p className="text-xs tracking-wide text-muted-foreground">COVER PREVIEW</p>
                     <div className="mt-3 flex min-h-40 flex-col items-center justify-center gap-3 text-center">
                       {previewUrl && (
                         <Image key={previewUrl} src={previewUrl} alt="Book cover preview" width={140} height={180} unoptimized loading="eager" onLoad={() => setCoverLoaded(true)} onError={() => {
                           setPreviewUrl("");
                           setCoverLoaded(false);
                           setImageFile(null);
-                          setCoverError("Could not load this image. Choose another file or check the URL.");
+                          toast.error("Could not load this image. Choose another file or check the URL.");
                         }} className={coverLoaded ? "max-h-44 w-auto max-w-full rounded object-contain" : "h-0 w-0 opacity-0"} />
                       )}
                       {!coverLoaded && <div className="flex h-36 w-24 items-center justify-center rounded-md border-l-8 border-[#eac58c] bg-[#315c5d] px-3 text-left font-[family-name:var(--font-dm-serif)] text-lg text-[#fffaf1]">YOUR<br />BOOK</div>}
                     </div>
                   </div>
-                  <p className="mt-3 text-xs leading-relaxed text-[#9badae]">Selected cover appears here before publishing.</p>
+                  <p className="mt-3 text-xs leading-relaxed text-muted-foreground">Selected cover appears here before publishing.</p>
                 </div>
               </div>
-              {coverError && <p id="cover-error" role="alert" className="mt-3 text-sm text-[#f3b7a8]">{coverError}</p>}
-              <p id="cover-help" className="mt-5 text-xs text-[#eac58c]">Use either Upload File or Paste Image URL. Only the selected method is required.</p>
+              <p id="cover-help" className="mt-5 text-xs text-gold">Use either Upload File or Paste Image URL. Only the selected method is required.</p>
             </section>
 
             <div>
               <Label htmlFor="book-description" className={labelClass}>Short description</Label>
-              <Textarea id="book-description" name="description" required rows={4} placeholder="Write a little about what makes this book worth reading..." className="min-h-28 border-0 bg-[#223638] px-3 py-3 text-white placeholder:text-[#91a4a4] focus-visible:border-[#a9e9cd] focus-visible:ring-[#a9e9cd]/30" />
+              <Textarea id="book-description" name="description" required rows={4} placeholder="Write a little about what makes this book worth reading..." className="min-h-28 border-border bg-field px-3 py-3 text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/30" />
             </div>
 
-            <p className="text-sm text-[#a7b8b8]">Sharing as <span className="text-[#fffaf1]">{name}</span> ({email})</p>
+            <p className="text-sm text-muted-foreground">Sharing as <span className="text-foreground">{name}</span> ({email})</p>
 
             <div>
-              {submitError && <p role="alert" className="mb-3 text-sm text-[#f3b7a8]">{submitError}</p>}
-              <Button type="submit" disabled={submitting} className="h-11 w-full bg-[#a9e9cd] text-[#102625] hover:bg-[#c4f4dc]">
+              <Button type="submit" disabled={submitting} className="h-11 w-full bg-primary text-primary-foreground hover:bg-primary/90">
                 {submitting && <Spinner />}
                 {uploading ? "Uploading cover..." : submitting ? "Publishing..." : "Publish book"} <span aria-hidden="true">→</span>
               </Button>
